@@ -9,5 +9,9 @@ make
 ## Run
 
 ```bash
-./demo
+make run
+```
+
+```bash
+LD_LIBRARY_PATH=./lib/ ./demo
 ```

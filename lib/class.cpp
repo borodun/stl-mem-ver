@@ -3,9 +3,9 @@
 
 using namespace std;
 
-MyClass::MyClass()
+MyClass::MyClass(int new_x)
 {
-  x = 20;
+  x = new_x;
 }
 
 void MyClass::DoSomething()

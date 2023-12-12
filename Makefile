@@ -1,5 +1,5 @@
 LIBNAME = memver
-LIBFILE = lib/lib$(LIBNAME).a
+LIBFILE = lib/lib$(LIBNAME).so
 LIB_OBJS := lib/class.o
 
 PROGNAME = demo
@@ -31,4 +31,7 @@ $(LIB_OBJS): LDFLAGS = -Ilib/include/
 clean:
 	rm $(LIB_OBJS) $(LIBFILE) $(PROG_OBJS) $(PROGNAME)
 
-.PHONY: all clean
+run: $(PROGNAME)
+	LD_LIBRARY_PATH=./lib/ ./$^
+
+.PHONY: all clean run

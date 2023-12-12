@@ -4,7 +4,7 @@
 class MyClass
 {
 public:
-  MyClass();
+  MyClass(int x);
 
   virtual void DoSomething();
 
