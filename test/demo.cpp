@@ -7,6 +7,10 @@
 #include <vector>
 #include <atomic>
 #include <iostream>
+#include <tuple>
+
+#include "class.h"
+#include "test-header.h"
 
 class ThreadLog
 {
@@ -17,6 +21,10 @@ private:
 
 public:
 	friend std::ostream& operator<<(std::ostream& os, const ThreadLog& tl);
+	friend bool operator<(const ThreadLog& l, const ThreadLog& r)
+	{
+		return std::tie(l.tp, l.tid) < std::tie(r.tp, r.tid);
+	}
 };
 
 std::ostream& operator<<(std::ostream& os, const ThreadLog& tl)
@@ -55,7 +63,8 @@ void SetFiller::start()
 {
 	for (int i = 0; i < nthreads; i++)
 	{
-		random_writer_threads.push_back(std::thread(random_writer));
+
+		random_writer_threads.push_back(std::thread(&SetFiller::random_writer, this));
 	}
 }
 
@@ -95,6 +104,9 @@ void SetFiller::random_writer()
 int main (void)
 {
 	using namespace std::chrono_literals;
+
+	MyClass* classVar = new MyClass(var);
+	classVar->DoSomething();
 
 	SetFiller filler(3);
 	const int iterations = 10;

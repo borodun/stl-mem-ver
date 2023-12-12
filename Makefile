@@ -3,7 +3,7 @@ LIBFILE = lib/lib$(LIBNAME).so
 LIB_OBJS := lib/class.o
 
 PROGNAME = demo
-PROG_OBJS = test/main.o
+PROG_OBJS = test/demo.o
 
 CXX = g++
 CXXFLAGS = -Wall -Wpointer-arith -Werror=vla -Wendif-labels -Wmissing-format-attribute \
