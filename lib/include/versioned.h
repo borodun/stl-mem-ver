@@ -1,6 +1,7 @@
 #ifndef __VERSIONED_H__
 #define __VERSIONED_H__
 
+#include <iostream>
 #include <map>
 
 class Segment;

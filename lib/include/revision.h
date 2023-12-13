@@ -4,6 +4,7 @@
 #include <thread>
 #include <memory>
 #include "segment.h"
+#include <iostream>
 
 // class Segment;
 
@@ -11,7 +12,7 @@ class Revision
 {
 public:
 	Revision();
-	Revision(Segment &root, Segment &current);
+	Revision(std::shared_ptr<Segment> root, std::shared_ptr<Segment> current);
 
 	template<typename T>
 	Revision *Fork(T&& func);
@@ -21,23 +22,21 @@ public:
 	std::shared_ptr<Segment> root;
 	std::shared_ptr<Segment> current;
 	std::thread thread;
+	thread_local static Revision *currentRevision;
 };
 
-thread_local static Revision *currentRevision;
-
-
+// It needs to be in header because of linking problems
 template<typename T>
 Revision *Revision::Fork(T&& func) {
-	Segment *s = new Segment(*(current.get()));
-	Revision *r = new Revision(*(current.get()), *s);
-	current.get()->Release(); // cannot bring refcount to zero
-	Segment *sptr = new Segment(*(current.get()));
-	current = std::make_shared<Segment>(*sptr);
+	auto s = std::make_shared<Segment>(current);
+	Revision *r = new Revision(current, s);
+	current.get()->Release();
+	current = std::make_shared<Segment>(current);
 
-	thread = std::thread( [func, r]() {
-		Revision *previous = currentRevision;
+	Revision *previous = currentRevision;
+	r->thread = std::thread([func, r, previous]() {
 		currentRevision = r;
-		// TODO: try catch?
+		// TODO: try catch
 		func();
 		currentRevision = previous;
 	});

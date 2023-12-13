@@ -1,22 +1,26 @@
 #include "versioned.h"
 #include "revision.h"
 #include "segment.h"
+#include <string>
 
 template <class T>
 Versioned<T>::Versioned(T v) {
-    Set(*currentRevision, v);
+    Set(*Revision::currentRevision, v);
 }
 
 template <class T>
 T Versioned<T>::Get() {
-    return Get(*currentRevision);
+    return Get(*Revision::currentRevision);
 }
 
 template <class T>
 T Versioned<T>::Get(Revision &r) {
     Segment *s = r.current.get();
 
-    while (versions[s->version] == -1) {
+    while (versions.find(s->version) == versions.end()) {
+        if (s->parent.get() == nullptr)
+            break;
+
         s = s->parent.get();
     }
 
@@ -25,12 +29,12 @@ T Versioned<T>::Get(Revision &r) {
 
 template <class T>
 void Versioned<T>::Set(T v) {
-    Set(*currentRevision, v);
+    Set(*Revision::currentRevision, v);
 }
 
 template <class T>
 void Versioned<T>::Set(Revision &r, T value) {
-    if (versions[r.current.get()->version] == -1) {
+    if (versions.find(r.current.get()->version) == versions.end()) {
         r.current.get()->written.push_back(this);
     }
 
@@ -39,26 +43,30 @@ void Versioned<T>::Set(Revision &r, T value) {
 
 template <class T>
 void Versioned<T>::Release(Segment &release) {
-    versions[release.version] = -1;
+    versions.erase(release.version);
 }
 
 template <class T>
 void Versioned<T>::Collapse(Revision &main, Segment &parent) {
-    if (versions[main.current.get()->version] == -1) {
+    if (versions.find(main.current.get()->version) == versions.end()) {
         Set(main, versions[parent.version]);
     }
-    versions[parent.version] = -1;
+    versions.erase(parent.version);
 }
 
 template <class T>
 void Versioned<T>::Merge(Revision &main, Revision &joinRev, Segment &join) {
     Segment *s = joinRev.current.get();
-    while (versions[s->version] == -1) {
+    while (versions.find(s->version) == versions.end()) {
+        if (s->parent.get() == nullptr)
+            break;
         s = s->parent.get();
     }
-    if (s == &join) { // only merge if this was the last write
+    if (s == &join) {
         Set(main, versions[join.version]);
     }
 }
 
+// Needs to be here because of linking porblems
+// To fix them everything should be in header file
 template class Versioned<int>;

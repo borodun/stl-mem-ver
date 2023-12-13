@@ -2,21 +2,22 @@
 #include "versioned.h"
 #include "segment.h"
 
-// thread_local Revision *Revision::currentRevision;
+thread_local Revision *Revision::currentRevision;
 
 Revision::Revision() {
-    Segment *s = new Segment();
-    Revision(*s, *s);
+    std::shared_ptr<Segment> s = std::make_shared<Segment>();
+    root = s;
+    current = s;
+    currentRevision = this;
 }
 
-Revision::Revision(Segment &my_root, Segment &my_current) {
-    root = std::make_shared<Segment>(my_root);
-    current = std::make_shared<Segment>(my_current);
+Revision::Revision(std::shared_ptr<Segment> my_root, std::shared_ptr<Segment> my_current) {
+    root = my_root;
+    current = my_current;
 }
 
 void Revision::Join(Revision &join) {
-    //TODO: try catch?
-
+    //TODO: try catch
     join.thread.join();
     Segment *s = join.current.get();
     while (s != join.root.get()) {

@@ -2,20 +2,21 @@
 #include "versioned.h"
 #include "revision.h"
 
+int Segment::versionCount = 0;
+
 Segment::Segment() {
     parent = nullptr;
-    parent->refcount++;
 
-    version = 1;
+    version = versionCount++;
     refcount = 1;
 }
 
-Segment::Segment(Segment &my_parent) {
-    parent = std::make_shared<Segment>(my_parent);
-    if (parent != NULL)
+Segment::Segment(std::shared_ptr<Segment> my_parent) {
+    parent = my_parent;
+    if (parent != nullptr)
         parent->refcount++;
 
-    version = 1;
+    version = versionCount++;
     refcount = 1;
 }
 

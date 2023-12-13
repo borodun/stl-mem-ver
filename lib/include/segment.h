@@ -11,7 +11,7 @@ class Segment
 {
 public:
 	Segment();
-	Segment(Segment &parent);
+	Segment(std::shared_ptr<Segment> parent);
 	void Release();
 	void Collapse(Revision &main);
 
