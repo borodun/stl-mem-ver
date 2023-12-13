@@ -1,6 +1,8 @@
 LIBNAME = memver
 LIBFILE = lib/lib$(LIBNAME).so
-LIB_OBJS := lib/class.o
+LIB_OBJS := lib/revision.o \
+			lib/segment.o \
+			lib/versioned.o
 
 PROGNAME = demo
 PROG_OBJS = test/demo.o
@@ -9,7 +11,7 @@ CXX = g++
 CXXFLAGS = -Wall -Wpointer-arith -Werror=vla -Wendif-labels -Wmissing-format-attribute \
 			-Wimplicit-fallthrough=3 -Wcast-function-type -Wshadow=compatible-local \
 			-Wformat-security -fno-strict-aliasing -fwrapv -Wno-format-truncation \
-			-Wno-stringop-truncation -g -O2 -fPIC
+			-Wno-stringop-truncation -g -O2 -fPIC -std=c++20
 
 all: $(PROGNAME)
 	chmod +x $^
