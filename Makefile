@@ -5,13 +5,14 @@ LIB_OBJS := lib/revision.o \
 			lib/versioned.o
 
 PROGNAME = demo
-PROG_OBJS = test/demo.o
+PROG_OBJS = test/main.o
 
 CXX = g++
 CXXFLAGS = -Wall -Wpointer-arith -Werror=vla -Wendif-labels -Wmissing-format-attribute \
 			-Wimplicit-fallthrough=3 -Wcast-function-type -Wshadow=compatible-local \
 			-Wformat-security -fno-strict-aliasing -fwrapv -Wno-format-truncation \
-			-Wno-stringop-truncation -g -O2 -fPIC -std=c++20
+			-Wno-stringop-truncation -g -O2 -fPIC -std=c++20 \
+			-fsanitize=address
 
 all: $(PROGNAME)
 	chmod +x $^
