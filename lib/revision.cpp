@@ -2,7 +2,7 @@
 #include "versioned.h"
 #include "segment.h"
 
-thread_local Revision *Revision::currentRevision = new Revision();
+thread_local std::shared_ptr<Revision> Revision::currentRevision = std::make_shared<Revision>();
 
 Revision::Revision() {
     std::shared_ptr<Segment> s = std::make_shared<Segment>();
@@ -15,13 +15,13 @@ Revision::Revision(std::shared_ptr<Segment> my_root, std::shared_ptr<Segment> my
     current = my_current;
 }
 
-Revision *ForkRevision(std::function<void ()> func) {
+std::shared_ptr<Revision> ForkRevision(std::function<void ()> func) {
 	auto s = std::make_shared<Segment>(Revision::currentRevision->current);
-	Revision *r = new Revision(Revision::currentRevision->current, s);
-	Revision::currentRevision->current.get()->Release();
+	std::shared_ptr<Revision>  r = std::make_shared<Revision>(Revision::currentRevision->current, s);
+	Revision::currentRevision->current->Release();
 	Revision::currentRevision->current = std::make_shared<Segment>(Revision::currentRevision->current);
 
-	Revision *previous = Revision::currentRevision;
+	std::shared_ptr<Revision> previous = Revision::currentRevision;
 	r->thread = std::thread([func, r, previous]() {
 		Revision::currentRevision = r;
 		// TODO: try catch
@@ -32,17 +32,17 @@ Revision *ForkRevision(std::function<void ()> func) {
 	return r;
 }
 
-void JoinRevision(Revision &join) {
+void JoinRevision(std::shared_ptr<Revision> join) {
     //TODO: try catch
-    join.thread.join();
-    Segment *s = join.current.get();
-    while (s != join.root.get()) {
+    join->thread.join();
+    std::shared_ptr<Segment> s = join->current;
+    while (s != join->root) {
         for (auto v: s->written) {
-            v->Merge(*Revision::currentRevision, join, *s);
+            v->Merge(Revision::currentRevision, join, s);
         }
-        s = s->parent.get();
+        s = s->parent;
     }
 
-    join.current.get()->Release();
-    Revision::currentRevision->current->Collapse(*Revision::currentRevision);
+    join->current->Release();
+    Revision::currentRevision->current->Collapse(Revision::currentRevision);
 }

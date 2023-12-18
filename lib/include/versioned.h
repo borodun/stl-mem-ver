@@ -2,6 +2,7 @@
 #define __VERSIONED_H__
 
 #include <iostream>
+#include <memory>
 #include <map>
 
 class Segment;
@@ -10,9 +11,9 @@ class Revision;
 class VersionedI
 {
 public:
-	virtual void Release(Segment &release) = 0;
-	virtual void Collapse(Revision &main, Segment &parent) = 0;
-	virtual void Merge(Revision &main, Revision &joinRev, Segment &join) = 0;
+	virtual void Release(std::shared_ptr<Segment> release) = 0;
+	virtual void Collapse(std::shared_ptr<Revision> main, std::shared_ptr<Segment> parent) = 0;
+	virtual void Merge(std::shared_ptr<Revision> main, std::shared_ptr<Revision> joinRev, std::shared_ptr<Segment> join) = 0;
 };
 
 template <class T>
@@ -23,14 +24,14 @@ public:
 	Versioned(T val);
 
 	T Get();
-	T Get(Revision &r);
+	T Get(std::shared_ptr<Revision> r);
 
 	void Set(T v);
-	void Set(Revision &r, T value);
+	void Set(std::shared_ptr<Revision> r, T value);
 
-	void Release(Segment &release) override;
-	void Collapse(Revision &main, Segment &parent) override;
-	void Merge(Revision &main, Revision &joinRev, Segment &join) override;
+	void Release(std::shared_ptr<Segment> release) override;
+	void Collapse(std::shared_ptr<Revision> main, std::shared_ptr<Segment> parent) override;
+	void Merge(std::shared_ptr<Revision> main, std::shared_ptr<Revision> joinRev, std::shared_ptr<Segment> join) override;
 };
 
 #endif

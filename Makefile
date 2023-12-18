@@ -12,7 +12,7 @@ CXXFLAGS = -Wall -Wpointer-arith -Werror=vla -Wendif-labels -Wmissing-format-att
 			-Wimplicit-fallthrough=3 -Wcast-function-type -Wshadow=compatible-local \
 			-Wformat-security -fno-strict-aliasing -fwrapv -Wno-format-truncation \
 			-Wno-stringop-truncation -g -O2 -fPIC -std=c++20 \
-			-fsanitize=address
+			# -fsanitize=address
 
 all: $(PROGNAME)
 	chmod +x $^

@@ -7,13 +7,13 @@
 class Revision;
 class VersionedI;
 
-class Segment
+class Segment : public std::enable_shared_from_this<Segment>
 {
 public:
 	Segment();
 	Segment(std::shared_ptr<Segment> parent);
 	void Release();
-	void Collapse(Revision &main);
+	void Collapse(std::shared_ptr<Revision> main);
 
 	std::shared_ptr<Segment> parent;
 	int version;

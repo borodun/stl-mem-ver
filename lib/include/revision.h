@@ -14,19 +14,14 @@ public:
 	Revision();
 	Revision(std::shared_ptr<Segment> root, std::shared_ptr<Segment> current);
 
-	template<typename T>
-	Revision *Fork(T&& func);
-
-	void Join(Revision &join);
-
 	std::shared_ptr<Segment> root;
 	std::shared_ptr<Segment> current;
 	std::thread thread;
-	thread_local static Revision *currentRevision;
+	thread_local static std::shared_ptr<Revision> currentRevision;
 };
 
-Revision *ForkRevision(std::function<void ()> func);
+std::shared_ptr<Revision> ForkRevision(std::function<void ()> func);
 
-void JoinRevision(Revision &join);
+void JoinRevision(std::shared_ptr<Revision> join);
 
 #endif

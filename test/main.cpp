@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 	Versioned<int> y = Versioned<int>(100);
 
 	checkVals("Val before fork1", x, y, 0, 100);
-	Revision *join1 = ForkRevision([&x, &y]() {
+	auto join1 = ForkRevision([&x, &y]() {
 		checkVals("Val before set in fork1", x, y, 0, 100);
 		x.Set(1);
 		y.Set(101);
@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 	printf("\n");
 
 	checkVals("Val before fork2", x, y, 11, 100);
-	Revision *join2 = ForkRevision([&x, &y]() {
+	auto join2 = ForkRevision([&x, &y]() {
 		checkVals("Val before set in fork2", x, y, 11, 100);
 		x.Set(2);
 		checkVals("Val after set in fork2", x, y, 2, 100);
@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 	printf("\n");
 
 	checkVals("Val before fork3", x, y, 11, 122);
-	Revision *join3 = ForkRevision([&x, &y]() {
+	auto join3 = ForkRevision([&x, &y]() {
 		checkVals("Val before set in fork3", x, y, 11, 122);
 		y.Set(103);
 		checkVals("Val after set in fork3", x, y, 11, 103);
@@ -67,14 +67,14 @@ int main(int argc, char **argv)
 	printf("\n");
 
 	checkVals("Val before join1", x, y, 33, 133);
-	JoinRevision(*join1);
+	JoinRevision(join1);
 	checkVals("Val after join1", x, y, 1, 101);
 
 	checkVals("Val before join1", x, y, 1, 101);
-	JoinRevision(*join2);
+	JoinRevision(join2);
 	checkVals("Val after join1", x, y, 2, 101);
 
 	checkVals("Val before join1", x, y, 2, 101);
-	JoinRevision(*join3);
+	JoinRevision(join3);
 	checkVals("Val after join1", x, y, 2, 103);
 }
