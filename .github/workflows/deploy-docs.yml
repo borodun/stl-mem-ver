@@ -24,7 +24,7 @@ jobs:
 
     steps:
     - name: Install doxygen
-      run: sudo apt update && sudo apt install -y doxygen
+      run: sudo apt update && sudo apt install -y doxygen graphviz
 
     - name: Clone repo
       uses: actions/checkout@v4
