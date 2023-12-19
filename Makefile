@@ -31,10 +31,13 @@ $(LIB_OBJS): LDFLAGS = -Ilib/include/
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -c $< -o $@
 
+doc:
+	doxygen doxygen.conf
+
 clean:
 	rm $(LIB_OBJS) $(LIBFILE) $(PROG_OBJS) $(PROGNAME)
 
 run: $(PROGNAME)
 	LD_LIBRARY_PATH=./lib/ ./$^
 
-.PHONY: all clean run
+.PHONY: all clean run doc
