@@ -1,3 +1,9 @@
+/**
+ * @file  versioned.h
+ *
+ * @brief Implementation of the Versioned classes and interface.
+ */
+
 #ifndef __VERSIONED_H__
 #define __VERSIONED_H__
 

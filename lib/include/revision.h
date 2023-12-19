@@ -1,3 +1,9 @@
+/**
+ * @file  revision.h
+ *
+ * @brief Implementation of the class Revision.
+ */
+
 #ifndef __REVISION_H__
 #define __REVISION_H__
 

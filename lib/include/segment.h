@@ -1,3 +1,9 @@
+/**
+ * @file  segment.h
+ *
+ * @brief Implementation of the class Segment.
+ */
+
 #ifndef __SEGMENT_H__
 #define __SEGMENT_H__
 
