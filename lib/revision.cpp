@@ -1,6 +1,7 @@
 #include "revision.h"
 #include "versioned.h"
 #include "segment.h"
+#include <sstream>
 
 thread_local std::shared_ptr<Revision> Revision::currentRevision = std::make_shared<Revision>();
 
@@ -45,4 +46,18 @@ void JoinRevision(std::shared_ptr<Revision> join) {
 
     join->current->Release();
     Revision::currentRevision->current->Collapse(Revision::currentRevision);
+}
+
+void PrintRevision() {
+    std::shared_ptr<Segment> s = Revision::currentRevision->current;
+
+    std::ostringstream o;
+    o << std::endl;
+    while (s) {
+        o << "thread: "<< std::this_thread::get_id() << ", segment ver:" << s->version
+             << ", addr: " << s << ", refcount: " << s->refcount << ", written size: "  << s->written.size() << std::endl;
+        s = s->parent;
+    }
+
+    std::cout << o.str() << std::endl;
 }

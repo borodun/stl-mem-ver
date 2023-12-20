@@ -9,10 +9,10 @@
 
 #include <thread>
 #include <memory>
-#include "segment.h"
-#include "versioned.h"
 #include <iostream>
 #include <functional>
+
+class Segment;
 
 /**
  * @brief Revision class for for keeping track of segment branches
@@ -79,5 +79,11 @@ std::shared_ptr<Revision> ForkRevision(std::function<void ()> func);
  * @param join The Revision to join to current Revision of that thread
  */
 void JoinRevision(std::shared_ptr<Revision> join);
+
+/**
+ * @brief Print revision segments for debugging
+ *
+ */
+void PrintRevision();
 
 #endif

@@ -10,9 +10,8 @@
 #include <iostream>
 #include <memory>
 #include <map>
-
-class Segment;
-class Revision;
+#include "revision.h"
+#include "segment.h"
 
 /**
  * @brief Interface for all Versioned classes
@@ -48,6 +47,13 @@ public:
 	 * @param val Your object
 	 */
 	Versioned(T val);
+
+	/**
+	 * @brief Destroy the Versioned object
+	 *
+	 * Removes all mentions of that versioned object in current Revision
+	 */
+	~Versioned();
 
 	/**
 	 * @brief Get the current value of the object in the current Revision
@@ -107,5 +113,90 @@ private:
 	 */
 	void Set(std::shared_ptr<Revision> r, T value);
 };
+
+
+// All methods need to be decalred in header due to template linking issues
+
+template <class T>
+Versioned<T>::Versioned(T v) {
+    Set(Revision::currentRevision, v);
+}
+
+template <class T>
+inline Versioned<T>::~Versioned()
+{
+	std::shared_ptr<Segment> s = Revision::currentRevision->current;
+
+	while (s) {
+        if (versions.find(s->version) != versions.end()) {
+			for (std::list<VersionedI *>::iterator it = s->written.begin(); it != s->written.end(); ++it){
+				if (*it == this) {
+					s->written.erase(it++);
+				}
+			}
+		}
+        s = s->parent;
+    }
+}
+
+template <class T>
+T Versioned<T>::Get() {
+    return Get(Revision::currentRevision);
+}
+
+template <class T>
+T Versioned<T>::Get(std::shared_ptr<Revision> r) {
+    std::shared_ptr<Segment> s = r->current;
+
+    while (versions.find(s->version) == versions.end()) {
+        if (!s->parent)
+            break;
+
+        s = s->parent;
+    }
+
+    return versions[s->version];
+}
+
+template <class T>
+void Versioned<T>::Set(T v) {
+    Set(Revision::currentRevision, v);
+}
+
+template <class T>
+void Versioned<T>::Set(std::shared_ptr<Revision> r, T value) {
+    if (versions.find(r->current->version) == versions.end()) {
+        r->current->written.push_back(this);
+    }
+
+    versions[r->current->version] = value;
+}
+
+template <class T>
+void Versioned<T>::Release(std::shared_ptr<Segment> release) {
+	versions.erase(release->version);
+}
+
+template <class T>
+void Versioned<T>::Collapse(std::shared_ptr<Revision> main, std::shared_ptr<Segment> parent) {
+    if (versions.find(main->current->version) == versions.end()) {
+        Set(main, versions[parent->version]);
+    }
+    Release(parent);
+}
+
+template <class T>
+void Versioned<T>::Merge(std::shared_ptr<Revision> main, std::shared_ptr<Revision> joinRev, std::shared_ptr<Segment> join) {
+    std::shared_ptr<Segment> s = joinRev->current;
+    while (versions.find(s->version) == versions.end()) {
+        if (!s->parent)
+            break;
+
+        s = s->parent;
+    }
+    if (s == join) {
+        Set(main, versions[join->version]);
+    }
+}
 
 #endif

@@ -22,7 +22,7 @@ Segment::Segment(std::shared_ptr<Segment> my_parent) {
 
 void Segment::Release() {
     if (--refcount == 0) {
-        for (auto v: written) {
+        for (auto &v: written) {
             v->Release(shared_from_this());
         }
         if (parent != NULL)
@@ -32,10 +32,9 @@ void Segment::Release() {
 
 void Segment::Collapse(std::shared_ptr<Revision> main) {
     while (parent != main->root && parent->refcount == 1) {
-        for(auto v : parent->written) {
+        for(auto &v : parent->written) {
             v->Collapse(main, parent);
         }
         parent = parent->parent; // remove parent
     }
 }
-

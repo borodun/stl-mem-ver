@@ -1,28 +1,31 @@
 LIBNAME = memver
-LIBFILE = lib/lib$(LIBNAME).so
-LIB_OBJS := lib/revision.o \
-			lib/segment.o \
-			lib/versioned.o
+LIB_DIR = lib
+LIBFILE = $(LIB_DIR)/lib$(LIBNAME).so
+LIB_SOURCES = $(wildcard $(LIB_DIR)/*.cpp)
+LIB_OBJS = $(LIB_SOURCES:$(LIB_DIR)/%.cpp=$(LIB_DIR)/%.o)
+LIB_DEPS = $(wildcard $(LIB_DIR)/include/*.h)
 
 PROGNAME = demo
-PROG_OBJS = test/main.o
+PROG_DIR = test
+PROG_OBJS = $(PROG_DIR)/main.o
+PROG_DEPS = $(wildcard $(PROG_DIR)/include/*.h)
 
 CXX = g++
 CXXFLAGS = -Wall -Wpointer-arith -Werror=vla -Wendif-labels -Wmissing-format-attribute \
 			-Wimplicit-fallthrough=3 -Wcast-function-type -Wshadow=compatible-local \
 			-Wformat-security -fno-strict-aliasing -fwrapv -Wno-format-truncation \
-			-Wno-stringop-truncation -g -O2 -fPIC -std=c++20 \
+			-Wno-stringop-truncation -g -Og -ggdb3 -fno-omit-frame-pointer -fPIC -std=c++20 \
 			# -fsanitize=address
 
 all: $(PROGNAME)
 	chmod +x $^
 
-$(PROGNAME): $(LIBFILE) $(PROG_OBJS)
+$(PROGNAME): $(LIBFILE) $(PROG_OBJS) $(PROG_DEPS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(PROG_OBJS) -o $@ -l$(LIBNAME)
 
 $(PROGNAME): LDFLAGS = -L./lib -Itest/include/ -Ilib/include/
 
-$(LIBFILE): $(LIB_OBJS)
+$(LIBFILE): $(LIB_OBJS) $(LIB_DEPS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(LIB_OBJS) -shared -o $@
 
 $(PROG_OBJS): LDFLAGS = -Itest/include/ -Ilib/include/
