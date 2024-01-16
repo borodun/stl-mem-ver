@@ -46,7 +46,7 @@ public:
 	 *
 	 * @param val Your object
 	 */
-	Versioned(T val);
+	Versioned(const T& val);
 
 	/**
 	 * @brief Destroy the Versioned object
@@ -68,7 +68,7 @@ public:
 	 *
 	 * @param v New object value
 	 */
-	void Set(T v);
+	void Set(const T& v);
 
 	/**
 	 * @brief Forget version that was changed in some Segment
@@ -111,14 +111,14 @@ private:
 	 * @param r Revision to use
 	 * @param value New object value
 	 */
-	void Set(std::shared_ptr<Revision> r, T value);
+	void Set(std::shared_ptr<Revision> r, const T& value);
 };
 
 
 // All methods need to be decalred in header due to template linking issues
 
 template <class T>
-Versioned<T>::Versioned(T v) {
+Versioned<T>::Versioned(const T& v) {
     Set(Revision::currentRevision, v);
 }
 
@@ -159,12 +159,12 @@ T Versioned<T>::Get(std::shared_ptr<Revision> r) {
 }
 
 template <class T>
-void Versioned<T>::Set(T v) {
+void Versioned<T>::Set(const T& v) {
     Set(Revision::currentRevision, v);
 }
 
 template <class T>
-void Versioned<T>::Set(std::shared_ptr<Revision> r, T value) {
+void Versioned<T>::Set(std::shared_ptr<Revision> r, const T& value) {
     if (versions.find(r->current->version) == versions.end()) {
         r->current->written.push_back(this);
     }

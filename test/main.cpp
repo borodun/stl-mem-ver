@@ -1,10 +1,12 @@
-#include <versioned.h>
-#include <revision.h>
 #include <iostream>
+#include <functional>
 #include <list>
 #include <set>
 
+#include "versioned.h"
+#include "revision.h"
 #include "utils.h"
+#include "vs_set.h"
 
 void test_vals() {
 	std::cout << "Testing basic objects" << std::endl;
@@ -87,6 +89,16 @@ void test_lists() {
 	checkContainers("Val after join1", x, y, {0, 1, 2, 4}, {100, 101, 102, 104});
 }
 
+void test_vs_sets() {
+	std::cout << "Testing vs_sets constructors" << std::endl;
+
+	
+	vs::vs_set<int> x;
+	vs::vs_set<int, std::greater<int>> xx;
+	vs::vs_set<int> y{1,2,3,4};
+	vs::vs_set<int, std::greater<int>> z{1,2,3,4};
+}
+
 void test_sets() {
 	std::cout << "Testing sets" << std::endl;
 
@@ -124,4 +136,11 @@ int main(int argc, char **argv)
 	std::cout << std::endl;
 
 	test_sets();
+
+	sleep(1);
+	std::cout << std::endl;
+
+	test_vs_sets();
+
+	std::cout << "Done" << std::endl;
 }
