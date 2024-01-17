@@ -89,16 +89,6 @@ void test_lists() {
 	checkContainers("Val after join1", x, y, {0, 1, 2, 4}, {100, 101, 102, 104});
 }
 
-void test_vs_sets() {
-	std::cout << "Testing vs_sets constructors" << std::endl;
-
-	
-	vs::vs_set<int> x;
-	vs::vs_set<int, std::greater<int>> xx;
-	vs::vs_set<int> y{1,2,3,4};
-	vs::vs_set<int, std::greater<int>> z{1,2,3,4};
-}
-
 void test_sets() {
 	std::cout << "Testing sets" << std::endl;
 
@@ -123,24 +113,58 @@ void test_sets() {
 	checkContainers("Val after join1", x, y, {0, 1, 2, 4}, {100, 101, 102, 104});
 }
 
+void test_vs_sets_constructors() {
+	std::cout << "Testing vs_sets constructors" << std::endl;
+
+	
+	vs::vs_set<int> x;
+	vs::vs_set<int, std::greater<int>> xx;
+	vs::vs_set<int> y{1,2,3,4};
+	vs::vs_set<int, std::greater<int>> z{1,2,3,4};
+}
+
+void test_vs_sets() {
+	std::cout << "Testing vs_sets" << std::endl;
+
+	vs::vs_set<int> x{1,2,3,4};
+	vs::vs_set<int> y{101,102,103,104};
+
+
+	testCompareContainers("Val before fork1", x, std::set<int>{0, 1, 2, 3});
+	testCompareContainers("Val before fork1", y, std::set<int>{100, 101, 102, 103});
+
+	auto join1 = ForkRevision([&x, &y]() {
+		testCompareContainers("Val before set", x, std::set<int>{0, 1, 2, 3});
+		testCompareContainers("Val before set", y, std::set<int>{100, 101, 102, 103});
+		x.insert(4);
+		y.insert(104);
+		testCompareContainers("Val after set", x, std::set<int>{0, 1, 2, 3, 4});
+		testCompareContainers("Val after set", y, std::set<int>{100, 101, 102, 103, 104});
+	});
+	x.insert(5);
+	testCompareContainers("Val after fork1", x, std::set<int>{0, 1, 2, 3, 5});
+	testCompareContainers("Val after fork1", y, std::set<int>{100, 101, 102, 103});
+
+
+	sleep(1);
+	std::cout << std::endl;
+
+	testCompareContainers("Val before join1", x, std::set<int>{0, 1, 2, 3, 5});
+	testCompareContainers("Val before join1", y, std::set<int>{100, 101, 102, 103});
+	JoinRevision(join1);
+	testCompareContainers("Val after join1", x, std::set<int>{0, 1, 2, 3, 4});
+	testCompareContainers("Val after join1", y, std::set<int>{100, 101, 102, 103, 104});
+}
+
 int main(int argc, char **argv)
 {
-	test_vals();
+	std::vector<std::function<void()>> tests =
+	{test_vals, test_lists, test_sets, test_vs_sets_constructors, test_vs_sets};
 
-	sleep(1);
-	std::cout << std::endl;
-
-	test_lists();
-
-	sleep(1);
-	std::cout << std::endl;
-
-	test_sets();
-
-	sleep(1);
-	std::cout << std::endl;
-
-	test_vs_sets();
-
-	std::cout << "Done" << std::endl;
+	for(auto& i:tests){
+		i();
+		sleep(1);
+		std::cout << std::endl;
+	}
+	std::cout << "Test done" << std::endl;
 }

@@ -61,15 +61,20 @@ public:
 	 * @return T Object value
 	 * @see Revision
 	 */
-	T& Get();
+	const T& Get() const;
 
 	/**
 	 * @brief Set new value of the object
 	 *
 	 * @param v New object value
-	 * @return bool was set successful
+	 * @param updater Function to update value
+	 * 
+	 * @return bool result of updater if defined, else true
+	 * 
+	 * If updater function is defined, object will be updated in-place
+	 * instead of overwrite
 	 */
-	bool Set(const T& v);
+	bool Set(const T& v, const std::function<bool(T&)>& updater = nullptr);
 
 	/**
 	 * @brief Forget version that was changed in some Segment
@@ -104,15 +109,21 @@ private:
 	 * @param r Revision to use
 	 * @return T Object value
 	 */
-	T& Get(std::shared_ptr<Revision> r);
+	const T& Get(std::shared_ptr<Revision> r) const;
 
 	/**
 	 * @brief Set object value in specified Revision
 	 *
 	 * @param r Revision to use
 	 * @param value New object value
+	 * @param updater Function to update value
+	 * 
+	 * @return bool result of updater if defined, else true
+	 * 
+	 * If there is no version for this revision, create it
+	 * else overwrite current item
 	 */
-	bool Set(std::shared_ptr<Revision> r, const T& value);
+	bool Set(std::shared_ptr<Revision> r, const T& value, const std::function<bool(T&)>& updater = nullptr);
 };
 
 
@@ -141,12 +152,12 @@ inline Versioned<T>::~Versioned()
 }
 
 template <class T>
-T& Versioned<T>::Get() {
+const T& Versioned<T>::Get() const{
     return Get(Revision::currentRevision);
 }
 
 template <class T>
-T& Versioned<T>::Get(std::shared_ptr<Revision> r) {
+const T& Versioned<T>::Get(std::shared_ptr<Revision> r) const{
     std::shared_ptr<Segment> s = r->current;
 
     while (versions.find(s->version) == versions.end()) {
@@ -156,23 +167,29 @@ T& Versioned<T>::Get(std::shared_ptr<Revision> r) {
         s = s->parent;
     }
 
-    return versions[s->version];
+    return versions.at(s->version);
 }
 
 template <class T>
-bool Versioned<T>::Set(const T& v) {
-    return Set(Revision::currentRevision, v);
+bool Versioned<T>::Set(const T& v, const std::function<bool(T&)>& updater) {
+	return Set(Revision::currentRevision, v, updater);
 }
 
 template <class T>
-bool Versioned<T>::Set(std::shared_ptr<Revision> r, const T& value) {
-    if (versions.find(r->current->version) == versions.end()) {
-        r->current->written.push_back(this);
-    } else {
-		return false;
+bool Versioned<T>::Set(std::shared_ptr<Revision> r, const T& value, const std::function<bool(T&)>& updater) {
+	if (versions.find(r->current->version) == versions.end()) {
+		r->current->written.push_back(this);
+		versions[r->current->version] = value;
+		if (updater){
+			return updater(versions[r->current->version]);
+		}
+	} else {
+		if (updater){
+			return updater(versions[r->current->version]);
+		} else {
+			versions[r->current->version] = value;
+		}
 	}
-    versions[r->current->version] = value;
-
 	return true;
 }
 

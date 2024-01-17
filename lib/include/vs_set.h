@@ -4,6 +4,7 @@
 #include <functional>
 #include <set>
 #include <initializer_list>
+#include <iterator>
 
 #include "versioned.h"
 #include "revision.h"
@@ -28,6 +29,8 @@ namespace vs
 	/* public typedefs */
 
 	typedef Versioned<std::set<_Key, _Comp>> _Versioned;
+	typedef std::set<_Key, _Comp>::iterator iterator;
+	typedef std::set<_Key, _Comp>::size_type size_type;
 
 	private:
 
@@ -70,21 +73,53 @@ namespace vs
 
 
 	/* ------------------ Accessors ----------------------*/
-	// /**
-    //    *  Returns a read-only (constant) iterator that points to the first
-    //    *  element in the %set.  Iteration is done in ascending order according
-    //    *  to the keys.
-    //    */
+
+	/**
+	 * @brief  begin constant iterator
+	 * 
+	 * Returns a read-only (constant) iterator that points to the first
+	 * element in the vs_set.  Iteration is done in ascending order according
+	 * to the keys.
+	 */
+	iterator
+	begin() const noexcept
+	{ return _v_s.Get().begin(); }
+
+	/**
+	 * @brief end constant iterator
+	 * 
+	 * Returns a read-only (constant) iterator that points one past the last
+	 * element in the vs_set.  Iteration is done in ascending order according
+	 * to the keys.
+	 */
+	iterator
+	end() const noexcept
+	{ return _v_s.Get().end(); }
 
 
-    //   /**
-    //    *  Returns a read-only (constant) iterator that points one past the last
-    //    *  element in the %set.  Iteration is done in ascending order according
-    //    *  to the keys.
-    //    */
-	
-	//iterator find
-	//bool contains
+	/**
+	 * @brief size of underlying set
+	 */
+	size_type
+	size() const noexcept
+	{ return _v_s.Get().size(); }
+
+	/**
+	 * @brief check if element is contained in set
+	 */
+	bool
+	contains(const _Key& __x)
+	{ 
+		auto& _set = _v_s.Get();
+		return _set.find(__x) != _set.end();
+	}
+
+	/**
+	 * @brief find element in set
+	 */
+	iterator
+	find(const _Key& __x)
+	{ return _v_s.Get().find(__x); }
 
 	/* ------------------ Operators ----------------------*/
 
@@ -98,20 +133,11 @@ namespace vs
 	 *
 	 * reasons not to insert:
 	 * - this element is already present
-	 * - someone took this version, try again
 	 */
 	bool
 	insert(const _Key& __x)
 	{
-		std::set<_Key, _Comp> _set(_v_s.Get());
-		
-		auto res = _set.insert(__x);
-
-		if (!res.second){
-			return false;
-		}
-
-		return _v_s.Set(_set);
+		return _v_s.Set(_v_s.Get(), [&](std::set<_Key>& _set){return _set.insert(__x).second;});
 	}
 	// = (copy)
 	// = {}
