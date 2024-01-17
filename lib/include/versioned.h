@@ -61,14 +61,15 @@ public:
 	 * @return T Object value
 	 * @see Revision
 	 */
-	T Get();
+	T& Get();
 
 	/**
 	 * @brief Set new value of the object
 	 *
 	 * @param v New object value
+	 * @return bool was set successful
 	 */
-	void Set(const T& v);
+	bool Set(const T& v);
 
 	/**
 	 * @brief Forget version that was changed in some Segment
@@ -103,7 +104,7 @@ private:
 	 * @param r Revision to use
 	 * @return T Object value
 	 */
-	T Get(std::shared_ptr<Revision> r);
+	T& Get(std::shared_ptr<Revision> r);
 
 	/**
 	 * @brief Set object value in specified Revision
@@ -111,7 +112,7 @@ private:
 	 * @param r Revision to use
 	 * @param value New object value
 	 */
-	void Set(std::shared_ptr<Revision> r, const T& value);
+	bool Set(std::shared_ptr<Revision> r, const T& value);
 };
 
 
@@ -140,12 +141,12 @@ inline Versioned<T>::~Versioned()
 }
 
 template <class T>
-T Versioned<T>::Get() {
+T& Versioned<T>::Get() {
     return Get(Revision::currentRevision);
 }
 
 template <class T>
-T Versioned<T>::Get(std::shared_ptr<Revision> r) {
+T& Versioned<T>::Get(std::shared_ptr<Revision> r) {
     std::shared_ptr<Segment> s = r->current;
 
     while (versions.find(s->version) == versions.end()) {
@@ -159,17 +160,20 @@ T Versioned<T>::Get(std::shared_ptr<Revision> r) {
 }
 
 template <class T>
-void Versioned<T>::Set(const T& v) {
-    Set(Revision::currentRevision, v);
+bool Versioned<T>::Set(const T& v) {
+    return Set(Revision::currentRevision, v);
 }
 
 template <class T>
-void Versioned<T>::Set(std::shared_ptr<Revision> r, const T& value) {
+bool Versioned<T>::Set(std::shared_ptr<Revision> r, const T& value) {
     if (versions.find(r->current->version) == versions.end()) {
         r->current->written.push_back(this);
-    }
-
+    } else {
+		return false;
+	}
     versions[r->current->version] = value;
+
+	return true;
 }
 
 template <class T>

@@ -56,11 +56,20 @@ namespace vs
 		   const _Comp& __comp = _Comp())
 	: _v_s(std::set<_Key, _Comp>(__l, __comp)) { }
 
-	//*  @brief  Builds a %set from a range.
-	//*  @brief  %Set copy constructor.
+	/**
+	 * @brief  vs_set copy constructor
+	 * 
+	 * does not inherit versions history
+	 */
+	vs_set(const vs_set& __vs_set)
+	: _v_s(__vs_set._v_s.Get()) { }
+
 	//*  @brief %Set move constructor
 
-	/* ------------------ Accesors ----------------------*/
+	//*  @brief  Builds a %set from a range.
+
+
+	/* ------------------ Accessors ----------------------*/
 	// /**
     //    *  Returns a read-only (constant) iterator that points to the first
     //    *  element in the %set.  Iteration is done in ascending order according
@@ -74,9 +83,36 @@ namespace vs
     //    *  to the keys.
     //    */
 	
+	//iterator find
+	//bool contains
+
 	/* ------------------ Operators ----------------------*/
 
-	// insert
+	/* XXX: add pair<iteraror as in stl> */
+	/* XXX: move insert */
+
+	/**
+	 * @brief Attempts to insert an element into the %set.
+	 * @param  __x  Element to be inserted.
+	 * @return  true if element was inserted
+	 *
+	 * reasons not to insert:
+	 * - this element is already present
+	 * - someone took this version, try again
+	 */
+	bool
+	insert(const _Key& __x)
+	{
+		std::set<_Key, _Comp> _set(_v_s.Get());
+		
+		auto res = _set.insert(__x);
+
+		if (!res.second){
+			return false;
+		}
+
+		return _v_s.Set(_set);
+	}
 	// = (copy)
 	// = {}
 	};
