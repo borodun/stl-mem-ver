@@ -126,8 +126,8 @@ void test_vs_sets_constructors() {
 void test_vs_sets() {
 	std::cout << "Testing vs_sets" << std::endl;
 
-	vs::vs_set<int> x{1,2,3,4};
-	vs::vs_set<int> y{101,102,103,104};
+	vs::vs_set<int> x{0,1,2,3};
+	vs::vs_set<int> y{100,101,102,103};
 
 
 	testCompareContainers("Val before fork1", x, std::set<int>{0, 1, 2, 3});
@@ -158,8 +158,9 @@ void test_vs_sets() {
 
 int main(int argc, char **argv)
 {
-	std::vector<std::function<void()>> tests =
+	std::vector<std::function<void()>> tests = 
 	{test_vals, test_lists, test_sets, test_vs_sets_constructors, test_vs_sets};
+
 
 	for(auto& i:tests){
 		i();
