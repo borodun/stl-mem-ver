@@ -69,4 +69,17 @@ void checkContainers(std::string msg, Versioned<Container> &x, Versioned<Contain
 
 }
 
+template <typename VContainer, typename Container>
+bool testCompareContainers(std::string msg, VContainer& vx, Container&& ex)
+{
+	bool result = (vx.size() == ex.size());
+	for (auto ivx = vx.begin(), iex = ex.begin(); iex != ex.end(); ivx++, iex++)
+	{
+		result = result & (*ivx == *iex);
+	}
+	std::cout << (result ? "OK" : "BAD") << std::endl;
+
+	return result;
+}
+
 #endif
