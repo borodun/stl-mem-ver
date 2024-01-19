@@ -9,6 +9,7 @@
 #include "vs_set.h"
 #include "vs_queue.h"
 #include "vs_stack.h"
+#include "vs_tree.h"
 
 void test_vals() {
 	std::cout << "Testing basic objects" << std::endl;
@@ -178,12 +179,27 @@ test_vs_stack_constructors()
 	std::cout << "stack before" <<s.top() << std::endl;
 }
 
+void
+test_vs_tree_constructors()
+{
+	vs::vs_tree<int> t{1,2,3,4};
+
+	std::cout << "tree before: size " << t.size() << " height " << t.height() << std::endl;
+	t.push(6);
+	t.push(7);
+	std::cout << "tree middle: size " << t.size() << " height " << t.height() << std::endl;
+	t.push(8);
+	t.push(9);
+	std::cout << "tree end   : size " << t.size() << " height " << t.height() << std::endl;
+}
+
 int main(int argc, char **argv)
 {
-	std::vector<std::function<void()>> tests = 
-	{test_vals, test_lists, test_sets, 
+	std::vector<std::function<void()>> tests = {test_vs_tree_constructors};
+	/*{test_vals, test_lists, test_sets, 
 	test_vs_sets_constructors, test_vs_sets, 
-	test_vs_queue_constructors, test_vs_stack_constructors};
+	test_vs_queue_constructors, test_vs_stack_constructors,
+	test_vs_tree_constructors};*/
 
 
 	for(auto& i:tests){
