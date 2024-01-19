@@ -7,6 +7,8 @@
 #include "revision.h"
 #include "utils.h"
 #include "vs_set.h"
+#include "vs_queue.h"
+#include "vs_stack.h"
 
 void test_vals() {
 	std::cout << "Testing basic objects" << std::endl;
@@ -156,10 +158,32 @@ void test_vs_sets() {
 	testCompareContainers("Val after join1", y, std::set<int>{100, 101, 102, 103, 104});
 }
 
+void
+test_vs_queue_constructors()
+{
+	vs::vs_queue<int> q{1,2,3,4};
+	q.push(5);
+	std::cout << "queue before" << q.front() << " " << q.back() << std::endl;
+	q.pop();
+	std::cout << "queue after" << q.front() << " " << q.back() << std::endl;
+}
+
+void
+test_vs_stack_constructors()
+{
+	vs::vs_stack<int> s{1,2,3,4};
+	s.push(5);
+	std::cout << "stack before" << s.top() << std::endl;
+	s.pop();
+	std::cout << "stack before" <<s.top() << std::endl;
+}
+
 int main(int argc, char **argv)
 {
 	std::vector<std::function<void()>> tests = 
-	{test_vals, test_lists, test_sets, test_vs_sets_constructors, test_vs_sets};
+	{test_vals, test_lists, test_sets, 
+	test_vs_sets_constructors, test_vs_sets, 
+	test_vs_queue_constructors, test_vs_stack_constructors};
 
 
 	for(auto& i:tests){
