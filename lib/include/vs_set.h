@@ -15,9 +15,7 @@ namespace vs
 		/* TODO: add param _Strategy */
 
 	/**
-	 *  @brief A mimic of a standard container made up of unique keys, which can be
-	 *  retrieved in logarithmic time.
-	 *
+	 *  @brief A versioned mimic of a stl::set, suitable for multithread
 	 *
 	 *  @param _Key  Type of key objects.
 	 *  @param _Comp  Comparison function object type, defaults to less<_Key>.
