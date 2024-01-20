@@ -66,24 +66,9 @@ public:
 };
 
 /**
- * @brief Create new Revision with passed function
- *
- * @param func The function to be executed in forked thread
- * @return std::shared_ptr<Revision> Newly created Revision
- */
-std::shared_ptr<Revision> ForkRevision(std::function<void ()> func);
-
-/**
- * @brief Join Revision that was forked before
- *
- * @param join The Revision to join to current Revision of that thread
- */
-void JoinRevision(std::shared_ptr<Revision> join);
-
-/**
  * @brief Print revision segments for debugging
  *
  */
-void PrintRevision();
+void PrintRevision(std::shared_ptr<Revision> revision);
 
 #endif
