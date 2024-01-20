@@ -32,7 +32,7 @@ namespace vs
 	public:
 	/* public typedefs */
 
-	typedef Versioned<std::stack<_Key>> _Versioned;
+	typedef Versioned<std::stack<_Key>,_Strategy> _Versioned;
 	typedef std::stack<_Key>::size_type size_type;
 
 	private:

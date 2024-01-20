@@ -34,7 +34,7 @@ namespace vs
 	public:
 	/* public typedefs */
 
-	typedef Versioned<std::set<_Key, _Comp>> _Versioned;
+	typedef Versioned<std::set<_Key, _Comp>, _Strategy> _Versioned;
 	typedef std::set<_Key, _Comp>::iterator iterator;
 	typedef std::set<_Key, _Comp>::size_type size_type;
 
@@ -143,7 +143,7 @@ namespace vs
 	bool
 	insert(const _Key& __x)
 	{
-		return _v_s.Set(_v_s.Get(), [&](std::set<_Key>& _set){return _set.insert(__x).second;});
+		return _v_s.Set(_v_s.Get(), [&](std::set<_Key, _Comp>& _set){return _set.insert(__x).second;});
 	}
 	// = (copy)
 	// = {}
@@ -169,9 +169,10 @@ namespace vs
 	{
 		for (auto& i: src)
 		{
-			auto& found = dst.find(i);
+			auto found = dst.find(i);
+			/* XXX: dirty const_cast, but it is not used as const anyway */
 			if (found != dst.end())
-				merge_same_element(dst, *found, i);
+				merge_same_element(dst, const_cast<_Key&>(*found), const_cast<_Key&>(i));
 			else
 				dst.insert(i);
 		}

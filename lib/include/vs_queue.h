@@ -32,7 +32,7 @@ namespace vs
 	public:
 	/* public typedefs */
 
-	typedef Versioned<std::queue<_Key>> _Versioned;
+	typedef Versioned<std::queue<_Key>, _Strategy> _Versioned;
 	typedef std::queue<_Key>::size_type size_type;
 
 	private:

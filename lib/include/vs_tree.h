@@ -10,6 +10,9 @@
 
 namespace vs
 {
+	template<typename _Key>
+	class vs_tree_strategy;
+
 	/* internal class */
 
 	/**
@@ -266,6 +269,9 @@ namespace vs
 		// typedef _vs_tree_node<_Key, _Comp>::_Ptr_type _Ptr_type;
 		// typedef _vs_tree_node<_Key, _Comp>::size_type size_type;
 
+		/* needed for concept */
+		typedef _Key value_type;
+
 		private:
 
 		_Ptr_type head = nullptr;
@@ -333,14 +339,13 @@ namespace vs
 		iterator
 		begin()
 		{
-			return iterator(&this->head);
+			return iterator(this->head);
 		}
 		iterator
 		end()
 		{
 			return iterator(nullptr);
 		}
-
 
 		const _Key&
 		top()
@@ -421,14 +426,19 @@ namespace vs
 	 *
 	 *  @param _Key  Type of key objects.
 	 *  @param _Comp  Comparison function object type, defaults to less<_Key>.
+	 *  @param _Strategy  Custom strategy class for different merge behaviour
 	 */
-	template<typename _Key, typename _Comp = std::less<_Key>>
+	template<typename _Key, typename _Comp = std::less<_Key>, typename _Strategy = vs_tree_strategy<_Key>>
 	class vs_tree
 	{
+
+	static_assert(vs::IsMergeStrategy<_Strategy, _vs_tree<_Key>>, 
+	"Provided invalid strategy class in template");
+
 	public:
 	/* public typedefs */
 
-	typedef Versioned<_vs_tree<_Key, _Comp>> _Versioned;
+	typedef Versioned<_vs_tree<_Key, _Comp>, _Strategy> _Versioned;
 	typedef _vs_tree<_Key, _Comp>::iterator iterator;
 	typedef _vs_tree<_Key, _Comp>::size_type size_type;
 
@@ -539,6 +549,39 @@ namespace vs
 	}
 	// = (copy)
 	// = {}
+	};
+
+	/**
+	 * @brief simpliest determenistic merge strategy.
+	 * 
+	 * On merge, puts everything from one stack to other. It is expected to
+	 * start with empty stacks and merge remainders, or for user to override
+	 * this strategy.
+	 */
+	template<typename _Key>
+	class vs_tree_strategy
+	{
+	public:
+
+	void
+	merge(_vs_tree<_Key>& dst, _vs_tree<_Key>& src)
+	{
+		for (auto& i: src)
+		{
+			auto found = dst.find(i);
+			if (found != dst.end())
+				merge_same_element(dst, *found, i);
+			else
+				dst.push(i);
+		}
+	}
+
+	void
+	merge_same_element(_vs_tree<_Key>& dst, _Key& dstk, _Key& srck)
+	{
+		/* pretend we didnt saw new elements */
+	}
+
 	};
 }
 
