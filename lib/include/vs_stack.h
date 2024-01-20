@@ -8,20 +8,27 @@
 
 #include "versioned.h"
 #include "revision.h"
+#include "strategy.h"
 
 namespace vs
 {
 
-		/* TODO: add param _Strategy */
+	template<typename _Key>
+	class vs_stack_strategy;
 
 	/**
 	 *  @brief A versioned mimic of a stl::stack, suitable for multithread
 	 *
 	 *  @param _Key  Type of key objects.
+	 *  @param _Strategy  Custom strategy class for different merge behaviour
 	 */
-	template<typename _Key>
+	template<typename _Key, typename _Strategy = vs_stack_strategy<_Key>>
 	class vs_stack
 	{
+
+	static_assert(vs::IsMergeStrategy<_Strategy, std::stack<_Key>>, 
+		"Provided invalid strategy class in template");
+
 	public:
 	/* public typedefs */
 
@@ -116,6 +123,36 @@ namespace vs
 	}
 	// = (copy)
 	// = {}
+	};
+
+	/**
+	 * @brief simpliest determenistic merge strategy.
+	 * 
+	 * On merge, puts everything from one stack to other. It is expected to
+	 * start with empty stacks and merge remainders, or for user to override
+	 * this strategy.
+	 */
+	template<typename _Key>
+	class vs_stack_strategy
+	{
+	public:
+
+	void
+	merge(std::stack<_Key>& dst, std::stack<_Key>& src)
+	{
+		while (src.size() > 0)
+		{
+			dst.push(src.top());
+			src.pop();
+		}
+	}
+
+	void
+	merge_same_element(std::stack<_Key>& dst, _Key& dstk, _Key& srck)
+	{
+		dst.push(srck);
+	}
+
 	};
 }
 

@@ -195,11 +195,11 @@ test_vs_tree_constructors()
 
 int main(int argc, char **argv)
 {
-	std::vector<std::function<void()>> tests = {test_vs_tree_constructors};
-	/*{test_vals, test_lists, test_sets, 
+	std::vector<std::function<void()>> tests =
+	{test_vals, test_lists, test_sets, 
 	test_vs_sets_constructors, test_vs_sets, 
 	test_vs_queue_constructors, test_vs_stack_constructors,
-	test_vs_tree_constructors};*/
+	test_vs_tree_constructors};
 
 
 	for(auto& i:tests){

@@ -8,21 +8,29 @@
 
 #include "versioned.h"
 #include "revision.h"
+#include "strategy.h"
 
 namespace vs
 {
 
-		/* TODO: add param _Strategy */
+	template<typename _Key>
+	class vs_set_strategy;
 
 	/**
 	 *  @brief A versioned mimic of a stl::set, suitable for multithread
 	 *
 	 *  @param _Key  Type of key objects.
 	 *  @param _Comp  Comparison function object type, defaults to less<_Key>.
+	 *  @param _Strategy  Custom strategy class for different merge behaviour
 	 */
-	template<typename _Key, typename _Comp = std::less<_Key>>
+	template<typename _Key, typename _Comp = std::less<_Key>, 
+		typename _Strategy = vs_set_strategy<_Key>>
 	class vs_set
 	{
+
+	static_assert(vs::IsMergeStrategy<_Strategy, std::set<_Key>>, 
+		"Provided invalid strategy class in template");
+
 	public:
 	/* public typedefs */
 
@@ -139,6 +147,42 @@ namespace vs
 	}
 	// = (copy)
 	// = {}
+	};
+
+	/**
+	 * @brief simpliest determenistic merge strategy.
+	 * 
+	 * On merge, puts everything from one set to other. It is expected to
+	 * start with empty stacks and merge remainders, or for user to override
+	 * this strategy.
+	 * 
+	 * Merge_same_element is empty, user is expected to override it for actually
+	 * merging same elements.
+	 */
+	template<typename _Key>
+	class vs_set_strategy
+	{
+	public:
+
+	void
+	merge(std::set<_Key>& dst, std::set<_Key>& src)
+	{
+		for (auto& i: src)
+		{
+			auto& found = dst.find(i);
+			if (found != dst.end())
+				merge_same_element(dst, *found, i);
+			else
+				dst.insert(i);
+		}
+	}
+
+	void
+	merge_same_element(std::set<_Key>& dst, _Key& dstk, _Key& srck)
+	{
+		/* do nothing, as insert would handle it */
+	}
+
 	};
 }
 
