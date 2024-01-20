@@ -25,12 +25,31 @@ public:
 	virtual void Merge(std::shared_ptr<Revision> main, std::shared_ptr<Revision> joinRev, std::shared_ptr<Segment> join) = 0;
 };
 
+/* XXX: not really fits isMergeStrategy concept (no key and container here), but anyway */
+template<typename T>
+class DefaultMergeStrategy
+{
+	public:
+
+	void
+	merge(T& dst, T& src)
+	{
+		dst = src;
+	}
+
+	// void
+	// merge_same_element(T& dst, _Key& dstk, _Key& srck)
+	// {
+	// 	/* pretend we didnt saw new elements */
+	// }
+};
+
 /**
  * @brief Wrapper to make any class Versioned
  *
  * @tparam T Class that needs to be versioned
  */
-template <class T>
+template <class T, typename _Strategy = DefaultMergeStrategy<T>>
 class Versioned : public VersionedI {
 public:
 	/**
@@ -124,18 +143,29 @@ private:
 	 * else overwrite current item
 	 */
 	bool Set(std::shared_ptr<Revision> r, const T& value, const std::function<bool(T&)>& updater = nullptr);
+
+
+	/**
+	 * @brief Like Set, but use _Strategy to write instead
+	 */
+	bool SetMerge(std::shared_ptr<Revision> r, T& value);
+
+	/**
+	 * @brief Injected from versioned collections
+	 */
+	_Strategy merge_strategy;
 };
 
 
 // All methods need to be decalred in header due to template linking issues
 
-template <class T>
-Versioned<T>::Versioned(const T& v) {
+template <class T, typename _Strategy>
+Versioned<T,_Strategy>::Versioned(const T& v) {
     Set(Revision::currentRevision, v);
 }
 
-template <class T>
-inline Versioned<T>::~Versioned()
+template <class T, typename _Strategy>
+inline Versioned<T,_Strategy>::~Versioned()
 {
 	std::shared_ptr<Segment> s = Revision::currentRevision->current;
 
@@ -151,13 +181,13 @@ inline Versioned<T>::~Versioned()
     }
 }
 
-template <class T>
-const T& Versioned<T>::Get() const{
+template <class T, typename _Strategy>
+const T& Versioned<T,_Strategy>::Get() const{
     return Get(Revision::currentRevision);
 }
 
-template <class T>
-const T& Versioned<T>::Get(std::shared_ptr<Revision> r) const{
+template <class T, typename _Strategy>
+const T& Versioned<T,_Strategy>::Get(std::shared_ptr<Revision> r) const{
     std::shared_ptr<Segment> s = r->current;
 
     while (versions.find(s->version) == versions.end()) {
@@ -170,13 +200,13 @@ const T& Versioned<T>::Get(std::shared_ptr<Revision> r) const{
     return versions.at(s->version);
 }
 
-template <class T>
-bool Versioned<T>::Set(const T& v, const std::function<bool(T&)>& updater) {
+template <class T, typename _Strategy>
+bool Versioned<T,_Strategy>::Set(const T& v, const std::function<bool(T&)>& updater) {
 	return Set(Revision::currentRevision, v, updater);
 }
 
-template <class T>
-bool Versioned<T>::Set(std::shared_ptr<Revision> r, const T& value, const std::function<bool(T&)>& updater) {
+template <class T, typename _Strategy>
+bool Versioned<T,_Strategy>::Set(std::shared_ptr<Revision> r, const T& value, const std::function<bool(T&)>& updater) {
 	if (versions.find(r->current->version) == versions.end()) {
 		r->current->written.push_back(this);
 		versions[r->current->version] = value;
@@ -193,21 +223,32 @@ bool Versioned<T>::Set(std::shared_ptr<Revision> r, const T& value, const std::f
 	return true;
 }
 
-template <class T>
-void Versioned<T>::Release(std::shared_ptr<Segment> release) {
+template <class T, typename _Strategy>
+bool Versioned<T,_Strategy>::SetMerge(std::shared_ptr<Revision> r, T& value){
+	if (versions.find(r->current->version) == versions.end()) {
+		r->current->written.push_back(this);
+		versions[r->current->version] = value;
+	} else {
+		merge_strategy.merge(versions[r->current->version], value);
+	}
+	return true;
+}
+
+template <class T, typename _Strategy>
+void Versioned<T,_Strategy>::Release(std::shared_ptr<Segment> release) {
 	versions.erase(release->version);
 }
 
-template <class T>
-void Versioned<T>::Collapse(std::shared_ptr<Revision> main, std::shared_ptr<Segment> parent) {
+template <class T, typename _Strategy>
+void Versioned<T,_Strategy>::Collapse(std::shared_ptr<Revision> main, std::shared_ptr<Segment> parent) {
     if (versions.find(main->current->version) == versions.end()) {
         Set(main, versions[parent->version]);
     }
     Release(parent);
 }
 
-template <class T>
-void Versioned<T>::Merge(std::shared_ptr<Revision> main, std::shared_ptr<Revision> joinRev, std::shared_ptr<Segment> join) {
+template <class T, typename _Strategy>
+void Versioned<T,_Strategy>::Merge(std::shared_ptr<Revision> main, std::shared_ptr<Revision> joinRev, std::shared_ptr<Segment> join) {
     std::shared_ptr<Segment> s = joinRev->current;
     while (versions.find(s->version) == versions.end()) {
         if (!s->parent)
@@ -216,7 +257,7 @@ void Versioned<T>::Merge(std::shared_ptr<Revision> main, std::shared_ptr<Revisio
         s = s->parent;
     }
     if (s == join) {
-        Set(main, versions[join->version]);
+        SetMerge(main, versions[join->version]);
     }
 }
 

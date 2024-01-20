@@ -15,6 +15,7 @@ CXXFLAGS = -Wall -Wpointer-arith -Werror=vla -Wendif-labels -Wmissing-format-att
 			-Wimplicit-fallthrough=3 -Wcast-function-type -Wshadow=compatible-local \
 			-Wformat-security -fno-strict-aliasing -fwrapv -Wno-format-truncation \
 			-Wno-stringop-truncation -g -Og -ggdb3 -fno-omit-frame-pointer -fPIC -std=c++20 \
+			-fconcepts-diagnostics-depth=2 \
 			# -fsanitize=address
 
 all: $(PROGNAME)

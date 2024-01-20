@@ -10,6 +10,9 @@
 
 namespace vs
 {
+	template<typename _Key>
+	class vs_tree_strategy;
+
 	/* internal class */
 
 	/**
@@ -132,6 +135,124 @@ namespace vs
 
 	};
 
+	template<typename _Key, typename _Comp = std::less<_Key>>
+	struct _vs_tree_iterator
+	{
+		public:
+
+		typedef _vs_tree_node<_Key>* _Ptr_type;
+
+		typedef _Key  value_type;
+		typedef _Key& reference;
+		typedef _Key* pointer;
+
+		typedef std::forward_iterator_tag iterator_category;
+		typedef ptrdiff_t			 difference_type;
+
+		typedef _vs_tree_iterator<_Key, _Comp> _Self;
+
+		_vs_tree_iterator()
+		: parents(), node() { }
+
+		explicit
+		_vs_tree_iterator(_Ptr_type __x)
+		: parents(), node(__x) { }
+
+		reference
+		operator*()
+		{ return node->value; }
+
+		pointer
+		operator->()
+		{ return &(node->value); }
+
+		/* ------------------ Post/Pre-increment ----------------------*/
+		_Self&
+		operator++()
+		{
+			dfs_increment();
+			return *this;
+		}
+
+		_Self
+		operator++(int)
+		{
+			_Self __tmp = *this;
+			dfs_increment();
+			return __tmp;
+		}
+
+		// _Self&
+		// operator--()
+		// {
+		// 	dfs_decrement();
+		// 	return *this;
+		// }
+
+		// _Self
+		// operator--(int)
+		// {
+		// 	_Self __tmp = *this;
+		// 	dfs_decrement();
+		// 	return __tmp;
+		// }
+
+		friend bool
+		operator==(const _Self& __x, const _Self& __y)
+		{ return __x.node == __y.node; }
+
+		/* dirty hack, but i do not want to store and refresh parents */
+		std::stack<_Ptr_type> parents;
+		bool came_with_right = false;
+		_Ptr_type node;
+
+		private:
+
+		void
+		dfs_increment()
+		{
+			if (node->left)
+			{
+				parents.push(node);
+				node = node->left;
+				came_with_right = false;
+			}
+			else if (node->right)
+			{
+				parents.push(node);
+				node = node->right;
+				came_with_right = true;
+			}
+			else
+			{
+				while (!parents.empty())
+				{
+					node = parents.top();
+
+					if (came_with_right)
+					{
+						parents.pop();
+						continue;
+					}
+
+					if (node->right)
+					{
+						node = node->right;
+						came_with_right = true;
+					}
+					else
+						parents.pop();
+				}
+
+				if (parents.empty())
+				{
+					/* end() iterator, reached top and cannot advance right */
+					node = nullptr;
+				}
+			}
+		}
+	};
+
 	/**
 	 * @brief serves as stl-like interface from node to vs_tree; 
 	 * handles allocations in construction and destruction.
@@ -144,8 +265,12 @@ namespace vs
 		/* public typedefs */
 		typedef _vs_tree_node<_Key, _Comp>* _Ptr_type;
 		typedef int size_type;
+		typedef _vs_tree_iterator<_Key> iterator;
 		// typedef _vs_tree_node<_Key, _Comp>::_Ptr_type _Ptr_type;
 		// typedef _vs_tree_node<_Key, _Comp>::size_type size_type;
+
+		/* needed for concept */
+		typedef _Key value_type;
 
 		private:
 
@@ -211,10 +336,53 @@ namespace vs
 
 		/* ------------------ Accessors ----------------------*/
 
-		// iterator begin();
-		// iterator end();
-		// const _Key& top();
-		// iterator find();
+		iterator
+		begin()
+		{
+			return iterator(this->head);
+		}
+		iterator
+		end()
+		{
+			return iterator(nullptr);
+		}
+
+		const _Key&
+		top()
+		{
+			return *begin();
+		}
+		
+		/**
+		 * @brief lazy recursive implementation of find
+		 */
+		iterator
+		find(const _Key& _x)
+		{
+			return find_subtree(_x, head);
+		}
+
+		iterator
+		find_subtree(const _Key& _x, _Ptr_type& node, _Comp comp = _Comp{})
+		{
+			if (node->value == _x)
+				return iterator(node);
+
+			if (comp(_x, node->value))
+			{
+				if (node->left)
+					return find_subtree(_x, node->left);
+				else
+					return end();
+			}
+			else
+			{
+				if (node->right)
+					return find_subtree(_x, node->right);
+				else
+					return end();
+			}
+		}
 
 		size_type
 		height() const
@@ -258,15 +426,20 @@ namespace vs
 	 *
 	 *  @param _Key  Type of key objects.
 	 *  @param _Comp  Comparison function object type, defaults to less<_Key>.
+	 *  @param _Strategy  Custom strategy class for different merge behaviour
 	 */
-	template<typename _Key, typename _Comp = std::less<_Key>>
+	template<typename _Key, typename _Comp = std::less<_Key>, typename _Strategy = vs_tree_strategy<_Key>>
 	class vs_tree
 	{
+
+	static_assert(vs::IsMergeStrategy<_Strategy, _vs_tree<_Key>>, 
+	"Provided invalid strategy class in template");
+
 	public:
 	/* public typedefs */
 
-	typedef Versioned<_vs_tree<_Key, _Comp>> _Versioned;
-	//typedef _vs_tree<_Key, _Comp>::iterator iterator;
+	typedef Versioned<_vs_tree<_Key, _Comp>, _Strategy> _Versioned;
+	typedef _vs_tree<_Key, _Comp>::iterator iterator;
 	typedef _vs_tree<_Key, _Comp>::size_type size_type;
 
 	private:
@@ -357,9 +530,9 @@ namespace vs
 	/**
 	 * @brief find element in tree
 	 */
-	// iterator
-	// find(const _Key& __x)
-	// { return _v_s.Get().find(__x); }
+	iterator
+	find(const _Key& __x)
+	{ return _v_t.Get().find(__x); }
 
 	/* ------------------ Operators ----------------------*/
 
@@ -376,6 +549,39 @@ namespace vs
 	}
 	// = (copy)
 	// = {}
+	};
+
+	/**
+	 * @brief simpliest determenistic merge strategy.
+	 * 
+	 * On merge, puts everything from one stack to other. It is expected to
+	 * start with empty stacks and merge remainders, or for user to override
+	 * this strategy.
+	 */
+	template<typename _Key>
+	class vs_tree_strategy
+	{
+	public:
+
+	void
+	merge(_vs_tree<_Key>& dst, _vs_tree<_Key>& src)
+	{
+		for (auto& i: src)
+		{
+			auto found = dst.find(i);
+			if (found != dst.end())
+				merge_same_element(dst, *found, i);
+			else
+				dst.push(i);
+		}
+	}
+
+	void
+	merge_same_element(_vs_tree<_Key>& dst, _Key& dstk, _Key& srck)
+	{
+		/* pretend we didnt saw new elements */
+	}
+
 	};
 }
 

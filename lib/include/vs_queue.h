@@ -8,24 +8,31 @@
 
 #include "versioned.h"
 #include "revision.h"
+#include "strategy.h"
 
 namespace vs
 {
 
-		/* TODO: add param _Strategy */
+	template<typename _Key>
+	class vs_queue_strategy;
 
 	/**
 	 *  @brief A versioned mimic of a stl::queue, suitable for multithread
 	 *
 	 *  @param _Key  Type of key objects.
+	 *  @param _Strategy  Custom strategy class for different merge behaviour
 	 */
-	template<typename _Key>
+	template<typename _Key, typename _Strategy = vs_queue_strategy<_Key>>
 	class vs_queue
 	{
+
+	static_assert(vs::IsMergeStrategy<_Strategy, std::queue<_Key>>, 
+		"Provided invalid strategy class in template");
+
 	public:
 	/* public typedefs */
 
-	typedef Versioned<std::queue<_Key>> _Versioned;
+	typedef Versioned<std::queue<_Key>, _Strategy> _Versioned;
 	typedef std::queue<_Key>::size_type size_type;
 
 	private:
@@ -126,6 +133,36 @@ namespace vs
 	}
 	// = (copy)
 	// = {}
+	};
+
+	/**
+	 * @brief simpliest determenistic merge strategy.
+	 * 
+	 * On merge, puts everything from one queue to other. It is expected to
+	 * start with empty queues and merge remainders, or for user to override
+	 * this strategy.
+	 */
+	template<typename _Key>
+	class vs_queue_strategy
+	{
+	public:
+
+	void
+	merge(std::queue<_Key>& dst, std::queue<_Key>& src)
+	{
+		while (src.size() > 0)
+		{
+			dst.push(src.front());
+			src.pop();
+		}
+	}
+
+	void
+	merge_same_element(std::queue<_Key>& dst, _Key& dstk, _Key& srck)
+	{
+		dst.push(srck);
+	}
+
 	};
 }
 

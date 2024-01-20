@@ -8,25 +8,33 @@
 
 #include "versioned.h"
 #include "revision.h"
+#include "strategy.h"
 
 namespace vs
 {
 
-		/* TODO: add param _Strategy */
+	template<typename _Key>
+	class vs_set_strategy;
 
 	/**
 	 *  @brief A versioned mimic of a stl::set, suitable for multithread
 	 *
 	 *  @param _Key  Type of key objects.
 	 *  @param _Comp  Comparison function object type, defaults to less<_Key>.
+	 *  @param _Strategy  Custom strategy class for different merge behaviour
 	 */
-	template<typename _Key, typename _Comp = std::less<_Key>>
+	template<typename _Key, typename _Comp = std::less<_Key>, 
+		typename _Strategy = vs_set_strategy<_Key>>
 	class vs_set
 	{
+
+	static_assert(vs::IsMergeStrategy<_Strategy, std::set<_Key>>, 
+		"Provided invalid strategy class in template");
+
 	public:
 	/* public typedefs */
 
-	typedef Versioned<std::set<_Key, _Comp>> _Versioned;
+	typedef Versioned<std::set<_Key, _Comp>, _Strategy> _Versioned;
 	typedef std::set<_Key, _Comp>::iterator iterator;
 	typedef std::set<_Key, _Comp>::size_type size_type;
 
@@ -135,10 +143,47 @@ namespace vs
 	bool
 	insert(const _Key& __x)
 	{
-		return _v_s.Set(_v_s.Get(), [&](std::set<_Key>& _set){return _set.insert(__x).second;});
+		return _v_s.Set(_v_s.Get(), [&](std::set<_Key, _Comp>& _set){return _set.insert(__x).second;});
 	}
 	// = (copy)
 	// = {}
+	};
+
+	/**
+	 * @brief simpliest determenistic merge strategy.
+	 * 
+	 * On merge, puts everything from one set to other. It is expected to
+	 * start with empty stacks and merge remainders, or for user to override
+	 * this strategy.
+	 * 
+	 * Merge_same_element is empty, user is expected to override it for actually
+	 * merging same elements.
+	 */
+	template<typename _Key>
+	class vs_set_strategy
+	{
+	public:
+
+	void
+	merge(std::set<_Key>& dst, std::set<_Key>& src)
+	{
+		for (auto& i: src)
+		{
+			auto found = dst.find(i);
+			/* XXX: dirty const_cast, but it is not used as const anyway */
+			if (found != dst.end())
+				merge_same_element(dst, const_cast<_Key&>(*found), const_cast<_Key&>(i));
+			else
+				dst.insert(i);
+		}
+	}
+
+	void
+	merge_same_element(std::set<_Key>& dst, _Key& dstk, _Key& srck)
+	{
+		/* do nothing, as insert would handle it */
+	}
+
 	};
 }
 
