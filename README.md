@@ -15,6 +15,7 @@ Also starring poor man's AVL vs::tree!!
   - Goodbye `std::queue{{1,2,3,4}}`
 * Modern doxygen documentation on github pages
 * *Godawful mix of codestyles*. Blame C influence, Mom!
+* Transparent fokr/join mechanism using vs::thread.
 
 ## Not imptemented
 

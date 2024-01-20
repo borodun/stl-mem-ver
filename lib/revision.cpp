@@ -16,40 +16,13 @@ Revision::Revision(std::shared_ptr<Segment> my_root, std::shared_ptr<Segment> my
     current = my_current;
 }
 
-std::shared_ptr<Revision> ForkRevision(std::function<void ()> func) {
-	auto s = std::make_shared<Segment>(Revision::currentRevision->current);
-	std::shared_ptr<Revision>  r = std::make_shared<Revision>(Revision::currentRevision->current, s);
-	Revision::currentRevision->current->Release();
-	Revision::currentRevision->current = std::make_shared<Segment>(Revision::currentRevision->current);
-
-	std::shared_ptr<Revision> previous = Revision::currentRevision;
-	r->thread = std::thread([func, r, previous]() {
-		Revision::currentRevision = r;
-		// TODO: try catch
-		func();
-		Revision::currentRevision = previous;
-	});
-
-	return r;
-}
-
-void JoinRevision(std::shared_ptr<Revision> join) {
-    //TODO: try catch
-    join->thread.join();
-    std::shared_ptr<Segment> s = join->current;
-    while (s != join->root) {
-        for (auto v: s->written) {
-            v->Merge(Revision::currentRevision, join, s);
-        }
-        s = s->parent;
+void PrintRevision(std::shared_ptr<Revision> revision) {
+    if (revision == nullptr) {
+		std::cout << "Revision is null" << std::endl;
+        return;
     }
 
-    join->current->Release();
-    Revision::currentRevision->current->Collapse(Revision::currentRevision);
-}
-
-void PrintRevision() {
-    std::shared_ptr<Segment> s = Revision::currentRevision->current;
+    std::shared_ptr<Segment> s = revision->current;
 
     std::ostringstream o;
     o << std::endl;
