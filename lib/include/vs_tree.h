@@ -335,14 +335,14 @@ namespace vs
 
 		}
 
-		// ~_vs_tree()
-		// {
-		// 	std::cout << "deleting " << this << std::endl;
-		// 	if (head)
-		// 		delete_subtree(head);
+		~_vs_tree()
+		{
+			std::cout << "deleting " << this << std::endl;
+			if (head)
+				delete_subtree(head);
 
-		// 	head = nullptr;
-		// }
+			head = nullptr;
+		}
 
 		/* ------------------ Accessors ----------------------*/
 
