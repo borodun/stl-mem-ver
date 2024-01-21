@@ -185,7 +185,7 @@ test_vs_tree()
 {
 	vs::vs_tree<int> t;
 
-	for (int i = 1; i < 9; i++)
+	for (int i = 1; i < 10; i++)
 	{
 		t.push(i);
 		printVsTree(t);
@@ -193,6 +193,8 @@ test_vs_tree()
 
 	vs::vs_tree<float, std::greater<float>> tt{1,2,3,4};
 	vs::vs_tree<int> ttt{1,2,3,4};
+
+	std::cout << std::endl;
 
 	printVsTree(tt);
 	tt.push(6);
@@ -206,11 +208,11 @@ test_vs_tree()
 
 int main(int argc, char **argv)
 {
-	std::vector<std::function<void()>> tests = {test_vs_tree};
-	/*{test_vals, test_lists, test_sets,
+	std::vector<std::function<void()>> tests = 
+	{test_vals, test_lists, test_sets,
 	test_vs_sets_constructors, test_vs_sets,
 	test_vs_queue_constructors, test_vs_stack_constructors,
-	test_vs_tree};*/
+	test_vs_tree};
 
 
 	for(auto& i:tests){

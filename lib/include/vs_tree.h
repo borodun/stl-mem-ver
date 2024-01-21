@@ -49,7 +49,6 @@ namespace vs
 			size_type lh = (left ? left->height + 1 : 0);
 			size_type rh = (right ? right->height + 1 : 0);
 
-			std::cout << "refresh: my value " << value << " lh " << lh << " rh " << rh << std::endl; 
 			height = (lh > rh ? lh : rh);
 		}
 
@@ -87,7 +86,6 @@ namespace vs
 
 		_Ptr_type
 		turnleft(){
-			std::cout << "turnleft\n";
 			_Ptr_type child = right;
 			right = child->left;
 			child->left = this;
@@ -98,7 +96,6 @@ namespace vs
 
 		_Ptr_type
 		turnright(){
-			std::cout << "turnright\n";
 			_Ptr_type child = left;
 			left = child->right;
 			child->right = this;
@@ -224,22 +221,18 @@ namespace vs
 			{
 				parents.push(node);
 				node = node->left;
-				std::cout << " left ";
 			}
 			else if (node->right)
 			{
 				parents.push(node);
 				node = node->right;
-				std::cout << " right ";
 			}
 			else
 			{
-				std::cout << " tryup: ";
 				while (!parents.empty())
 				{
 					bool came_with_right = (parents.top()->right == node ? true : false);
 					node = parents.top();
-					std::cout << " up ";
 					if (came_with_right)
 					{
 						parents.pop();
@@ -248,7 +241,6 @@ namespace vs
 
 					if (node->right)
 					{
-						std::cout << " right ";
 						node = node->right;
 						break;
 					}
