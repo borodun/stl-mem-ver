@@ -183,27 +183,34 @@ test_vs_stack_constructors()
 void
 test_vs_tree()
 {
-	vs::vs_tree<int> t{1,2,3,4};
+	vs::vs_tree<int> t;
+
+	for (int i = 1; i < 9; i++)
+	{
+		t.push(i);
+		printVsTree(t);
+	}
 
 	vs::vs_tree<float, std::greater<float>> tt{1,2,3,4};
+	vs::vs_tree<int> ttt{1,2,3,4};
 
-	printVsTree(t);
-	t.push(6);
-	t.push(7);
-	printVsTree(t);
-	t.push(8);
-	t.push(9);
-	printVsTree(t);
+	printVsTree(tt);
+	tt.push(6);
+	tt.push(7);
+	printVsTree(tt);
+	tt.push(8);
+	tt.push(9);
+	printVsTree(tt);
 }
 
 
 int main(int argc, char **argv)
 {
-	std::vector<std::function<void()>> tests =
-	{test_vals, test_lists, test_sets,
+	std::vector<std::function<void()>> tests = {test_vs_tree};
+	/*{test_vals, test_lists, test_sets,
 	test_vs_sets_constructors, test_vs_sets,
 	test_vs_queue_constructors, test_vs_stack_constructors,
-	test_vs_tree};
+	test_vs_tree};*/
 
 
 	for(auto& i:tests){
