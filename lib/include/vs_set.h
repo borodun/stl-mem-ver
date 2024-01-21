@@ -124,7 +124,7 @@ namespace vs
 	 * @brief find element in set
 	 */
 	iterator
-	find(const _Key& __x)
+	find(const _Key& __x) const
 	{ return _v_s.Get().find(__x); }
 
 	/* ------------------ Operators ----------------------*/

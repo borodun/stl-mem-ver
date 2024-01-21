@@ -154,6 +154,31 @@ namespace vs
 	}
 
 	};
+
+	template<typename _Key>
+	std::ostream& operator << (std::ostream& os, vs_stack<_Key> const& value) {
+		vs_stack<_Key> temp = value;
+		std::stack<_Key> reversedStack;
+
+		while (temp.size() != 0) {
+			reversedStack.push(temp.top());
+			temp.pop();
+		}
+
+		std::ostringstream o;
+		o << "{ ";
+		while (reversedStack.size() != 0) {
+			o << reversedStack.top();
+			reversedStack.pop();
+			if (reversedStack.size() != 0) {
+				o << ", ";
+			}
+		}
+		o << " }";
+
+		os << o.str();
+		return os;
+	}
 }
 
 #endif
