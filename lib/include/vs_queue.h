@@ -164,6 +164,26 @@ namespace vs
 	}
 
 	};
+
+	template<typename _Key>
+	std::ostream& operator << (std::ostream& os, vs_queue<_Key> const& value) {
+		vs_queue<_Key> temp = value;
+
+		std::ostringstream o;
+		o << "{ ";
+		while (temp.size() != 0) {
+			o << temp.front();
+			temp.pop();
+			if (temp.size() != 0) {
+				o << ", ";
+			}
+		}
+		o << " }";
+
+		os << o.str();
+		return os;
+	}
+
 }
 
 #endif

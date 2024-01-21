@@ -24,7 +24,7 @@ target_include_directories(${LIBNAME} PRIVATE ${LIB_DIR}/include)
 # Executable settings
 set(PROGNAME tests)
 set(PROG_DIR test)
-file(GLOB PROG_SOURCES ${PROG_DIR}/catch2.cpp)
+file(GLOB PROG_SOURCES ${PROG_DIR}/tests.cpp)
 add_executable(${PROGNAME} ${PROG_SOURCES})
 target_include_directories(${PROGNAME} PRIVATE ${PROG_DIR}/include ${LIB_DIR}/include)
 target_link_libraries(${PROGNAME} PRIVATE ${LIBNAME} Catch2::Catch2WithMain)
@@ -37,23 +37,14 @@ add_executable(${DEMONAME} ${DEMO_SOURCES})
 target_include_directories(${DEMONAME} PRIVATE ${DEMO_DIR}/include ${LIB_DIR}/include)
 target_link_libraries(${DEMONAME} PRIVATE ${LIBNAME})
 
-# # Example settings
-# set(DEMO1NAME demo)
-# set(DEMO1_DIR test)
-# file(GLOB DEMO1_SOURCES ${DEMO1_DIR}/demo.cpp)
-# add_executable(${DEMO1NAME} ${DEMO1_SOURCES})
-# target_include_directories(${DEMO1NAME} PRIVATE ${DEMO1_DIR}/include ${LIB_DIR}/include)
-# target_link_libraries(${DEMO1NAME} PRIVATE ${LIBNAME})
-
 # Compiler flags
-target_compile_options(${LIBNAME} PRIVATE
-    -Wall -Wpointer-arith -Werror=vla -Wendif-labels -Wmissing-format-attribute
-    -Wimplicit-fallthrough=3 -Wcast-function-type -Wshadow=compatible-local
-    -Wformat-security -fno-strict-aliasing -fwrapv -Wno-format-truncation
-    -Wno-stringop-truncation -g -Og -ggdb3 -fno-omit-frame-pointer -fPIC -std=c++20
-    -fconcepts-diagnostics-depth=2
-    # -fsanitize=address
+set(CUSTOM_FLAGS "-Wall -Wpointer-arith -Werror=vla -Wendif-labels -Wmissing-format-attribute \
+    -Wimplicit-fallthrough=3 -Wcast-function-type -Wshadow=compatible-local \
+    -Wformat-security -fno-strict-aliasing -fwrapv -Wno-format-truncation \
+    -Wno-stringop-truncation -g -Og -ggdb3 -fno-omit-frame-pointer -fPIC -std=c++20 \
+    -fconcepts-diagnostics-depth=2"
 )
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CUSTOM_FLAGS}")
 
 # Testing
 include(CTest)
@@ -76,8 +67,3 @@ if(DOXYGEN_FOUND)
         COMMENT "Generating API documentation with Doxygen"
     )
 endif()
-
-# Clean target
-add_custom_target(clean-all
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/clean-all.cmake
-)

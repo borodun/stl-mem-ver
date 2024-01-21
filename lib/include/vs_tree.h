@@ -6,6 +6,7 @@
 #include <iterator>
 #include <stack>
 #include <iostream>
+#include <sstream>
 
 #include "versioned.h"
 #include "revision.h"
@@ -327,13 +328,20 @@ namespace vs
 
 		_vs_tree(const _vs_tree& _tree)
 		{
-			copy_subtree(this.head, _tree.head);
+			if (_tree.head) {
+				this->head = new _vs_tree_node(*(_tree.head));
+				copy_subtree(this->head, _tree.head);
+			}
+
 		}
 
 		~_vs_tree()
 		{
+			std::cout << "deleting " << this << std::endl;
 			if (head)
 				delete_subtree(head);
+
+			head = nullptr;
 		}
 
 		/* ------------------ Accessors ----------------------*/
@@ -370,13 +378,13 @@ namespace vs
 		 * @brief simple recursive implementation of find
 		 */
 		iterator
-		find(const _Key& _x)
+		find(const _Key& _x) const
 		{
 			return find_subtree(_x, head);
 		}
 
 		iterator
-		find_subtree(const _Key& _x, _Ptr_type& node, _Comp comp = _Comp{})
+		find_subtree(const _Key& _x, const _Ptr_type& node, _Comp comp = _Comp{}) const
 		{
 			if (node->value == _x)
 				return iterator(node);
@@ -497,7 +505,7 @@ namespace vs
 	 * does not inherit versions history
 	 */
 	vs_tree(const vs_tree& __vs_tree)
-	: _v_t(__vs_tree._v_s.Get()) { }
+	: _v_t(__vs_tree._v_t.Get()) { }
 
 	//*  @brief tree move constructor
 
@@ -513,7 +521,7 @@ namespace vs
 	 * element in the vs_tree. Iteration is done in depth-first order.
 	 */
 	iterator
-	begin()
+	begin() const
 	{ return _v_t.Get().begin(); }
 
 	/**
@@ -523,7 +531,7 @@ namespace vs
 	 * element in the vs_tree. Iteration is done in depth-first order.
 	 */
 	iterator
-	end()
+	end() const
 	{ return _v_t.Get().end(); }
 
 	/**
@@ -544,7 +552,7 @@ namespace vs
 	 * @brief find element in tree
 	 */
 	iterator
-	find(const _Key& __x)
+	find(const _Key& __x) const
 	{ return _v_t.Get().find(__x); }
 
 	/* ------------------ Operators ----------------------*/
@@ -596,6 +604,21 @@ namespace vs
 	}
 
 	};
+
+	template<typename _Key, typename _Comp>
+	std::ostream& operator << (std::ostream& os, vs_tree<_Key,_Comp> const& value) {
+		vs_tree<_Key,_Comp> temp = value;
+
+		std::ostringstream o;
+		o << "{ ";
+		for (auto& i: temp) {
+			o << i << ", ";
+		}
+		o << " }";
+
+		os << o.str();
+		return os;
+	}
 }
 
 #endif
