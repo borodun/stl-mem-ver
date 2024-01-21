@@ -5,6 +5,7 @@
 #include <versioned.h>
 #include <list>
 #include <sstream>
+#include "vs_tree.h"
 
 template <class T>
 void checkVals(std::string msg, Versioned<T> &x, Versioned<T> &y, T expectedX, T expectedY) {
@@ -80,6 +81,18 @@ bool testCompareContainers(std::string msg, VContainer& vx, Container&& ex)
 	std::cout << (result ? "OK" : "BAD") << std::endl;
 
 	return result;
+}
+
+template<typename _Key, typename _Comp>
+void printVsTree(vs::vs_tree<_Key,_Comp>& t)
+{
+	std::cout << "tree size: " << t.size() << " height: " << t.height() << std::endl;
+	std::cout << "tree contains: ";
+	for (auto& i: t)
+	{
+		std::cout << i << " ";
+	}
+	std::cout << std::endl;
 }
 
 #endif

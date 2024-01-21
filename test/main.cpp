@@ -123,9 +123,8 @@ void test_vs_sets_constructors() {
 
 	vs::vs_set<int> x;
 	vs::vs_set<int> y{1,2,3,4};
-	/* XXX: broken with vs_set_strategy not knowing about comp. */
-	// vs::vs_set<int, std::greater<int>> xx;
-	// vs::vs_set<int, std::greater<int>> z{1,2,3,4};
+	vs::vs_set<int, std::greater<int>> xx;
+	vs::vs_set<int, std::greater<int>> z{1,2,3,4};
 }
 
 void test_vs_sets() {
@@ -157,7 +156,7 @@ void test_vs_sets() {
 	testCompareContainers("Val before join1", x, std::set<int>{0, 1, 2, 3, 5});
 	testCompareContainers("Val before join1", y, std::set<int>{100, 101, 102, 103});
 	thread1.join();
-	testCompareContainers("Val after join1", x, std::set<int>{0, 1, 2, 3, 4});
+	testCompareContainers("Val after join1", x, std::set<int>{0, 1, 2, 3, 4, 5});
 	testCompareContainers("Val after join1", y, std::set<int>{100, 101, 102, 103, 104});
 }
 
@@ -182,18 +181,21 @@ test_vs_stack_constructors()
 }
 
 void
-test_vs_tree_constructors()
+test_vs_tree()
 {
 	vs::vs_tree<int> t{1,2,3,4};
 
-	std::cout << "tree before: size " << t.size() << " height " << t.height() << std::endl;
+	vs::vs_tree<float, std::greater<float>> tt{1,2,3,4};
+
+	printVsTree(t);
 	t.push(6);
 	t.push(7);
-	std::cout << "tree middle: size " << t.size() << " height " << t.height() << std::endl;
+	printVsTree(t);
 	t.push(8);
 	t.push(9);
-	std::cout << "tree end   : size " << t.size() << " height " << t.height() << std::endl;
+	printVsTree(t);
 }
+
 
 int main(int argc, char **argv)
 {
@@ -201,7 +203,7 @@ int main(int argc, char **argv)
 	{test_vals, test_lists, test_sets,
 	test_vs_sets_constructors, test_vs_sets,
 	test_vs_queue_constructors, test_vs_stack_constructors,
-	test_vs_tree_constructors};
+	test_vs_tree};
 
 
 	for(auto& i:tests){
