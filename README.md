@@ -1,6 +1,6 @@
 # Memory versioning project
 
-[Documentation](https://borodun.github.io/stl-mem-ver/)
+[Documentation](https://borodun.github.io/stl-mem-ver/namespaces.html)
 
 ## Description
 
@@ -16,7 +16,7 @@ Also starring poor man's AVL vs::tree!!
 * Versions-aware iterators
 * Initializer list constructors everywhere
   - Goodbye `std::queue{{1,2,3,4}}`
-* Modern doxygen documentation on [github pages](https://borodun.github.io/stl-mem-ver/)
+* Modern doxygen documentation on [github pages](https://borodun.github.io/stl-mem-ver/namespaces.html)
 * *Godawful mix of codestyles*. Blame C influence, Mom!
 * Transparent fokr/join mechanism using vs::thread.
 * Library relies on c++20 concepts for faster polymorphism
@@ -45,7 +45,7 @@ Lib is `libmemver.so`.
 ## Run demo (frequency tree)
 
 ```bash
-./demo_tree
+./demo_tree test/lorem.txt
 ```
 
 ## Run tests
