@@ -2,6 +2,7 @@
 *.a
 *.so
 demo
+demo_tree
 tests
 /.vs/
 /.vscode/
