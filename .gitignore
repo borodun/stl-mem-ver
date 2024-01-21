@@ -2,6 +2,15 @@
 *.a
 *.so
 demo
+tests
 /.vs/
 /.vscode/
 /docs/
+/CMakeFiles/
+/_deps/
+/Testing/
+*.cmake
+CMakeCache.txt
+CMakeDoxyfile.in
+DartConfiguration.tcl
+Makefile

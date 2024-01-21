@@ -21,9 +21,9 @@ Also starring poor man's AVL vs::tree!!
 
 * Nice testing framework
   - it is a mess now. A working mess, though.
-* ranges and views support 
+* ranges and views support
   - no time left due to mismanagement.
-* move semantics 
+* move semantics
   - who in their right mind will move MT-collections?? Although, implementaion is doable.
 * rewrite from legacy iterators to c++20 concepts
   - we use stl containers under the hood, and they use legacy iterators still.
@@ -31,16 +31,35 @@ Also starring poor man's AVL vs::tree!!
 ## Build
 
 ```bash
+cmake CMakeLists.txt
 make
 ```
+It will automatically clone and build the Catch2 testing framework.
 
-## Run
+Lib is `libmemver.so`.
 
+## Run tests
+
+### Run all tests
+
+Run through cmake integration:
 ```bash
-make run
+make run-tests
 ```
 
+Or run binary for compact output:
 ```bash
-LD_LIBRARY_PATH=./lib/ ./demo
+./tests
 ```
 
+### Run particular tests
+
+List available tests
+```
+./tests --list-tests
+```
+
+Run tests by tag:
+```
+./tests "[basic]"
+```
