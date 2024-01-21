@@ -13,7 +13,7 @@
 namespace vs
 {
 
-	template<typename _Key>
+	template<typename _Key, typename _Comp>
 	class vs_set_strategy;
 
 	/**
@@ -24,11 +24,11 @@ namespace vs
 	 *  @param _Strategy  Custom strategy class for different merge behaviour
 	 */
 	template<typename _Key, typename _Comp = std::less<_Key>, 
-		typename _Strategy = vs_set_strategy<_Key>>
+		typename _Strategy = vs_set_strategy<_Key, _Comp>>
 	class vs_set
 	{
 
-	static_assert(vs::IsMergeStrategy<_Strategy, std::set<_Key>>, 
+	static_assert(vs::IsMergeStrategy<_Strategy, std::set<_Key, _Comp>>, 
 		"Provided invalid strategy class in template");
 
 	public:
@@ -159,13 +159,13 @@ namespace vs
 	 * Merge_same_element is empty, user is expected to override it for actually
 	 * merging same elements.
 	 */
-	template<typename _Key>
+	template<typename _Key, typename _Comp>
 	class vs_set_strategy
 	{
 	public:
 
 	void
-	merge(std::set<_Key>& dst, std::set<_Key>& src)
+	merge(std::set<_Key, _Comp>& dst, std::set<_Key, _Comp>& src)
 	{
 		for (auto& i: src)
 		{
@@ -179,7 +179,7 @@ namespace vs
 	}
 
 	void
-	merge_same_element(std::set<_Key>& dst, _Key& dstk, _Key& srck)
+	merge_same_element(std::set<_Key, _Comp>& dst, _Key& dstk, _Key& srck)
 	{
 		/* do nothing, as insert would handle it */
 	}

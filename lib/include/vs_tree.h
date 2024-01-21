@@ -4,13 +4,16 @@
 #include <functional>
 #include <initializer_list>
 #include <iterator>
+#include <stack>
+#include <iostream>
 
 #include "versioned.h"
 #include "revision.h"
+#include "strategy.h"
 
 namespace vs
 {
-	template<typename _Key>
+	template<typename _Key, typename _Comp>
 	class vs_tree_strategy;
 
 	/* internal class */
@@ -43,17 +46,17 @@ namespace vs
 
 		void refresh_node_height()
 		{
-			size_type lh = (left ? left->height : 0);
-			size_type rh = (right ? right->height : 0);
+			size_type lh = (left ? left->height + 1 : 0);
+			size_type rh = (right ? right->height + 1 : 0);
 
-			height = (lh > rh ? lh : rh) + 1;
+			height = (lh > rh ? lh : rh);
 		}
 
 		size_type
 		node_delta_height()
 		{
-			size_type lh = (left ? left->height : 0);
-			size_type rh = (right ? right->height : 0);
+			size_type lh = (left ? left->height + 1 : 0);
+			size_type rh = (right ? right->height + 1 : 0);
 			
 			return lh - rh;
 		}
@@ -140,7 +143,7 @@ namespace vs
 	{
 		public:
 
-		typedef _vs_tree_node<_Key>* _Ptr_type;
+		typedef _vs_tree_node<_Key, _Comp>::_Ptr_type _Ptr_type;
 
 		typedef _Key  value_type;
 		typedef _Key& reference;
@@ -201,9 +204,12 @@ namespace vs
 		operator==(const _Self& __x, const _Self& __y)
 		{ return __x.node == __y.node; }
 
+		friend bool
+		operator!=(const _Self& __x, const _Self& __y)
+		{ return __x.node != __y.node; }
+
 		/* dirty hack, but i do not want to store and refresh parents */
 		std::stack<_Ptr_type> parents;
-		bool came_with_right = false;
 		_Ptr_type node;
 
 		private:
@@ -215,20 +221,18 @@ namespace vs
 			{
 				parents.push(node);
 				node = node->left;
-				came_with_right = false;
 			}
 			else if (node->right)
 			{
 				parents.push(node);
 				node = node->right;
-				came_with_right = true;
 			}
 			else
 			{
 				while (!parents.empty())
 				{
+					bool came_with_right = (parents.top()->right == node ? true : false);
 					node = parents.top();
-
 					if (came_with_right)
 					{
 						parents.pop();
@@ -238,7 +242,7 @@ namespace vs
 					if (node->right)
 					{
 						node = node->right;
-						came_with_right = true;
+						break;
 					}
 					else
 						parents.pop();
@@ -263,11 +267,9 @@ namespace vs
 		public:
 
 		/* public typedefs */
-		typedef _vs_tree_node<_Key, _Comp>* _Ptr_type;
-		typedef int size_type;
-		typedef _vs_tree_iterator<_Key> iterator;
-		// typedef _vs_tree_node<_Key, _Comp>::_Ptr_type _Ptr_type;
-		// typedef _vs_tree_node<_Key, _Comp>::size_type size_type;
+		typedef _vs_tree_iterator<_Key, _Comp> iterator;
+		typedef _vs_tree_node<_Key, _Comp>::_Ptr_type _Ptr_type;
+		typedef _vs_tree_node<_Key, _Comp>::size_type size_type;
 
 		/* needed for concept */
 		typedef _Key value_type;
@@ -347,6 +349,17 @@ namespace vs
 			return iterator(nullptr);
 		}
 
+		iterator
+		begin() const
+		{
+			return iterator(this->head);
+		}
+		iterator
+		end() const
+		{
+			return iterator(nullptr);
+		}
+
 		const _Key&
 		top()
 		{
@@ -354,7 +367,7 @@ namespace vs
 		}
 		
 		/**
-		 * @brief lazy recursive implementation of find
+		 * @brief simple recursive implementation of find
 		 */
 		iterator
 		find(const _Key& _x)
@@ -400,7 +413,7 @@ namespace vs
 			if (head)
 				head = head->node_insert(_value);
 			else
-				head = new _vs_tree_node(_value);
+				head = new _vs_tree_node<_Key, _Comp>(_value);
 
 			_height = head->height + 1;
 			_size++;
@@ -428,11 +441,11 @@ namespace vs
 	 *  @param _Comp  Comparison function object type, defaults to less<_Key>.
 	 *  @param _Strategy  Custom strategy class for different merge behaviour
 	 */
-	template<typename _Key, typename _Comp = std::less<_Key>, typename _Strategy = vs_tree_strategy<_Key>>
+	template<typename _Key, typename _Comp = std::less<_Key>, typename _Strategy = vs_tree_strategy<_Key, _Comp>>
 	class vs_tree
 	{
 
-	static_assert(vs::IsMergeStrategy<_Strategy, _vs_tree<_Key>>, 
+	static_assert(vs::IsMergeStrategy<_Strategy, _vs_tree<_Key, _Comp>>, 
 	"Provided invalid strategy class in template");
 
 	public:
@@ -496,22 +509,22 @@ namespace vs
 	/**
 	 * @brief  begin constant iterator
 	 * 
-	 * Returns a read-only (constant) iterator that points to the first
+	 * Returns an iterator that points to the first
 	 * element in the vs_tree. Iteration is done in depth-first order.
 	 */
-	//iterator
-	// begin() const noexcept
-	// { return _v_t.Get().begin(); }
+	iterator
+	begin()
+	{ return _v_t.Get().begin(); }
 
 	/**
 	 * @brief end constant iterator
 	 * 
-	 * Returns a read-only (constant) iterator that points one past the last
+	 * Returns an iterator that points one past the last
 	 * element in the vs_tree. Iteration is done in depth-first order.
 	 */
-	// iterator
-	// end() const noexcept
-	// { return _v_t.Get().end(); }
+	iterator
+	end()
+	{ return _v_t.Get().end(); }
 
 	/**
 	 * @brief size of underlying tree
@@ -558,13 +571,13 @@ namespace vs
 	 * start with empty stacks and merge remainders, or for user to override
 	 * this strategy.
 	 */
-	template<typename _Key>
+	template<typename _Key, typename _Comp>
 	class vs_tree_strategy
 	{
 	public:
 
 	void
-	merge(_vs_tree<_Key>& dst, _vs_tree<_Key>& src)
+	merge(_vs_tree<_Key, _Comp>& dst, _vs_tree<_Key, _Comp>& src)
 	{
 		for (auto& i: src)
 		{
@@ -577,7 +590,7 @@ namespace vs
 	}
 
 	void
-	merge_same_element(_vs_tree<_Key>& dst, _Key& dstk, _Key& srck)
+	merge_same_element(_vs_tree<_Key, _Comp>& dst, _Key& dstk, _Key& srck)
 	{
 		/* pretend we didnt saw new elements */
 	}
