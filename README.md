@@ -16,6 +16,8 @@ Also starring poor man's AVL vs::tree!!
 * Modern doxygen documentation on github pages
 * *Godawful mix of codestyles*. Blame C influence, Mom!
 * Transparent fokr/join mechanism using vs::thread.
+* Library relies on c++20 concepts for faster polymorphism
+  - Main goal was to study them and find use for them
 
 ## Not imptemented
 
@@ -25,7 +27,7 @@ Also starring poor man's AVL vs::tree!!
   - no time left due to mismanagement.
 * move semantics
   - who in their right mind will move MT-collections?? Although, implementaion is doable.
-* rewrite from legacy iterators to c++20 concepts
+* rewrite inside containers from legacy iterators to c++20 concepts
   - we use stl containers under the hood, and they use legacy iterators still.
 
 ## Build
@@ -62,4 +64,10 @@ List available tests
 Run tests by tag:
 ```
 ./tests "[basic]"
+```
+
+## Run example
+
+```bash
+./demo_tree
 ```

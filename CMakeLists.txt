@@ -29,6 +29,22 @@ add_executable(${PROGNAME} ${PROG_SOURCES})
 target_include_directories(${PROGNAME} PRIVATE ${PROG_DIR}/include ${LIB_DIR}/include)
 target_link_libraries(${PROGNAME} PRIVATE ${LIBNAME} Catch2::Catch2WithMain)
 
+# Example settings
+set(DEMONAME demo_tree)
+set(DEMO_DIR test)
+file(GLOB DEMO_SOURCES ${DEMO_DIR}/demo_tree.cpp)
+add_executable(${DEMONAME} ${DEMO_SOURCES})
+target_include_directories(${DEMONAME} PRIVATE ${DEMO_DIR}/include ${LIB_DIR}/include)
+target_link_libraries(${DEMONAME} PRIVATE ${LIBNAME})
+
+# # Example settings
+# set(DEMO1NAME demo)
+# set(DEMO1_DIR test)
+# file(GLOB DEMO1_SOURCES ${DEMO1_DIR}/demo.cpp)
+# add_executable(${DEMO1NAME} ${DEMO1_SOURCES})
+# target_include_directories(${DEMO1NAME} PRIVATE ${DEMO1_DIR}/include ${LIB_DIR}/include)
+# target_link_libraries(${DEMO1NAME} PRIVATE ${LIBNAME})
+
 # Compiler flags
 target_compile_options(${LIBNAME} PRIVATE
     -Wall -Wpointer-arith -Werror=vla -Wendif-labels -Wmissing-format-attribute

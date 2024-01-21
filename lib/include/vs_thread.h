@@ -3,6 +3,7 @@
 
 #include <thread>
 #include "revision.h"
+#include "segment.h"
 
 namespace vs {
 

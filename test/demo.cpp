@@ -9,8 +9,9 @@
 #include <iostream>
 #include <tuple>
 
-#include "class.h"
-#include "test-header.h"
+#include "vs_set.h"
+#include "vs_thread.h"
+#include "utils.h"
 
 class ThreadLog
 {
@@ -38,9 +39,9 @@ std::ostream& operator<<(std::ostream& os, const ThreadLog& tl)
 class SetFiller
 {
 private:
-	std::set<ThreadLog> logs;
+	vs::vs_set<ThreadLog> logs;
 	int nthreads;
-	std::vector<std::thread> random_writer_threads;
+	std::vector<vs::thread> random_writer_threads;
 	std::atomic_bool stop_called = false;
 
 	void random_writer();
@@ -64,7 +65,7 @@ void SetFiller::start()
 	for (int i = 0; i < nthreads; i++)
 	{
 
-		random_writer_threads.push_back(std::thread(&SetFiller::random_writer, this));
+		random_writer_threads.push_back(vs::thread(&SetFiller::random_writer, this));
 	}
 }
 
@@ -80,8 +81,7 @@ void SetFiller::stop()
 
 void SetFiller::print(std::ostream& out)
 {
-	std::set<ThreadLog> clogs(logs);
-	for(auto& i: clogs)
+	for(auto& i: logs)
 	{
 		out << i << " ";
 	}
@@ -96,6 +96,7 @@ void SetFiller::random_writer()
 	while (!stop_called)
 	{
 		logs.insert(ThreadLog());
+		print(std::cout);
 		std::this_thread::sleep_for(100ms);
 	}
 }
@@ -105,20 +106,14 @@ int main (void)
 {
 	using namespace std::chrono_literals;
 
-	MyClass* classVar = new MyClass(var);
-	classVar->DoSomething();
-
-	SetFiller filler(3);
-	const int iterations = 10;
+	SetFiller filler(2);
 
 	filler.start();
 
-	for (int i = 0; i < iterations; i++)
-	{
-		filler.print(std::cout);
-		std::this_thread::sleep_for(200ms);
-	}
+	std::this_thread::sleep_for(200ms);
 
 	filler.stop();
+
+	filler.print(std::cout);
 	return 0;
 }

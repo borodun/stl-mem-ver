@@ -83,8 +83,8 @@ bool testCompareContainers(std::string msg, VContainer& vx, Container&& ex)
 	return result;
 }
 
-template<typename _Key, typename _Comp>
-void printVsTree(vs::vs_tree<_Key,_Comp>& t)
+template<typename _Key, typename _Comp, typename _Strategy = vs::vs_tree_strategy<_Key,_Comp>>
+void printVsTree(vs::vs_tree<_Key, _Comp, _Strategy>& t)
 {
 	std::cout << "tree size: " << t.size() << " height: " << t.height() << std::endl;
 	std::cout << "tree contains: ";

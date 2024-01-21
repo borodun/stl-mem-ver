@@ -171,10 +171,11 @@ inline Versioned<T,_Strategy>::~Versioned()
 
 	while (s) {
         if (versions.find(s->version) != versions.end()) {
-			for (std::list<VersionedI *>::iterator it = s->written.begin(); it != s->written.end(); ++it){
-				if (*it == this) {
-					s->written.erase(it++);
-				}
+			for (auto it = s->written.begin(); it != s->written.end();){
+				if (*it == this)
+					it = s->written.erase(it);
+				else
+					it++;
 			}
 		}
         s = s->parent;
