@@ -3,6 +3,9 @@
 #include <algorithm>
 #include <map>
 
+#include <chrono>
+#include <thread>
+
 #include "vs_tree.h"
 #include "vs_thread.h"
 #include "utils.h"
@@ -19,12 +22,12 @@ struct MyKey
 
 	friend bool
 	operator==(const MyKey& __x, const MyKey& __y)
-	{ return __x == __y; }
+	{ return __x.c == __y.c; }
 
 	friend std::ostream& 
 	operator<<(std::ostream& os, const MyKey& k)
 	{
-		os << k.c + ":" + k.count;
+		os << k.c << ':' << k.count;
 		return os;
 	}
 };
@@ -76,6 +79,8 @@ std::map<char, int> countFrequencies(std::string& str)
 
 int main(int argc, char** argv)
 {
+	using namespace std::chrono_literals;
+
 	if (argc < 2)
 	{
 		std::cout << "Provide a filename of text file for demo to run";
@@ -111,6 +116,8 @@ int main(int argc, char** argv)
 
 	for (auto& i: res)
 		t.push(MyKey(i));
+
+	std::this_thread::sleep_for(200ms);
 
 	std::cout << "tree before join: \n";
 	printVsTree(t);
